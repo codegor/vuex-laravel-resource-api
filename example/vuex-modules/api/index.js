@@ -1,17 +1,36 @@
-import Vue from 'vue'
-import routes from './routes'
-import Resolver from 'vuex-laravel-rest-api'
-import socket from 'vuex-laravel-resource-api/src/socket.io'
-// import conf from '...config/dev.env'
+import Vue from 'vue';
+import routes from './routes';
+import Resolver from 'vuex-laravel-rest-api';
+import socket from 'vuex-laravel-resource-api/src/socket.io';
 
-// const WS = conf.hasOwnProperty('WS') ? conf.WS : true;
-const WS =true;
+/** if you need message add showMess vue global method, example below */
+/*
+import {Toast} from 'quasar'
+Vue.mixin({
+	methods: {
+		showMess (msg, options) {
+		  Toast.create.info({ html: msg, timeout: 1500, position: 'right'});
+		}
+	}
+});
+*/
+
+const WS = false;
+/** Also you can load WS const from conf file or from env file, example below */
+/*
+import conf from '...config/dev.env'
+const WS = conf.hasOwnProperty('WS') ? conf.WS : true;
+*/
 
 if('undefined' != typeof routes.socket && WS) {
   // console.log("WSS adr", window.location.hostname + routes.socket);
   socket.host = window.location.hostname + routes.socket;
   Resolver.setSocket(socket);
 }
+
+/** if you wont set your own getters library or your own error massages... */
+// Resolver.gettersLib = {/* your lib */};
+// Resolver.errorMe = {/* your lib for error mess */};
 
 Resolver.init(routes);
 Vue.use(Resolver);
