@@ -7,18 +7,17 @@
     "axios": "^0.18",
     "lodash": "^4.17.10",
     "vue": "^2.5.7",
-    "vuex": "^3.0.1",
-    "vue-toasted": "^1.1.24"
+    "vuex": "^3.0.1"
   },
   "files": [
     "dist",
     "example",
     "src"
   ],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/codegor/vuex-laravel-resource-api.git"
-	},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codegor/vuex-laravel-resource-api.git"
+  },
   "keywords": [
     "laravel",
     "vue",
@@ -27,4 +26,5 @@
     "vue laravel rest api",
     "rest api"
   ],
+  "license": "MIT"
 }
