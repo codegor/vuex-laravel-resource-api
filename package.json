@@ -15,6 +15,10 @@
     "example",
     "src"
   ],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/codegor/vuex-laravel-resource-api.git"
+	},
   "keywords": [
     "laravel",
     "vue",
