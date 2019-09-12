@@ -1,11 +1,11 @@
 {
   "name": "vuex-laravel-resource-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/Resolver.js",
   "description": "Vue API library for easy get data from Laravel REST Controller",
   "dependencies": {
     "axios": "^0.18",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.10"
   },
   "files": [
     "dist",
