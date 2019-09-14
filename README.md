@@ -1,9 +1,12 @@
 # vuex-laravel-resource-api
-**Library for Vuex+Laravel API**
+**Library for Vuex+Laravel REST Controller API**
 
 Easy Vuex api request when at Laravel you use REST Controller.
 
- **How to use?**
+**Installation**
+npm install vuex-laravel-resource-api
+
+**How to use?**
 
 First you need create in store vuex folder module api, then create at that folder 2 files:
  - index.js
