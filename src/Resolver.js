@@ -81,7 +81,7 @@ const Resolver = {
     this.$channel = this.$socket.private('api.'+userId);
   },
   startTimer(a){
-    // console.log('REST API: update by timer fire!', a, this.timers);
+    // if(this.debug) console.log('REST API: update by timer fire!', a, this.timers);
     let obj = this;
     if(_.has(this.timers, a))
       this.timers[a].id = setTimeout(()=>{obj.$store.dispatch('update' + _.upperFirst(a)); if(obj.debug) console.log('REST API: update by timer fire!', a)}, this.timers[a].sec*1000);
@@ -94,7 +94,7 @@ const Resolver = {
   },
   emitUpdate(name) {
     let actions = this.events.get(name);
-    console.log('API Resolver update event', this.$store, this.$state);
+    if(this.debug) console.log('API Resolver update event', this.$store, this.$state);
     if (!_.isEmpty(this.$store.state)) {
       _.each(actions, (a) => {
         if (!_.isNull(this.$store.state[a])) {
@@ -397,7 +397,7 @@ const Resolver = {
               obj.errorMes.def(error);
           }
 
-          console.dir(error);
+          if(obj.debug) console.dir(error);
         }, 50);
         return Promise.reject(error);
       }
@@ -413,6 +413,33 @@ const Resolver = {
     //   }
     // });
 
+    /**
+     * @param path string - this filed have 2 connected part: first is the method, and second is the resource
+     *                    method could be: get, load, show, create, update, delete
+     *                      get = method: 'GET', url: {prefix} + {action key} + '/'; (below in short view)
+     *                      load = GET /?param=xxx&...;
+     *                      show = GET /id;
+     *                      create = POST /;
+     *                      update = PUT /id;
+     *                      delete = DELETE /id;
+     *                    resource - it is a key of routes in config file with fist letter in upper case
+     *
+     *                    example: 'getManager', 'createManager', 'deleteCompanyItem' (see example/routes.js)
+     *                      'deleteCompanyItem' url will be "{prefix} + 'company-item' + '/id'",
+     *                          by default the lib use kebab case (with "-") for transform CamelCase,
+     *                          but you can change to snake (with "_"), if you set in routes.js file 'delimiter' field to "_";
+     *
+     *                    About methods:
+     *                    - 'show', 'update', 'delete' methods these are methods with a parameter, and in @param 'data' you should set 'id' key
+     *                    - 'create' and 'update' methods these are data methods and @param 'data' should be every times
+     *                    - 'load' method it is param method. It is like get method, but with params (in @param 'data' you can set all params)
+     *                    - 'get', 'load', 'show' methods these are data access methods and after these methods will not be called auto update of itself (and cascade updates)
+     *                    - You can add your own methods, for this you can set 'methods' field in route config.
+     *                      Methods field expects object where key it is a name of new method and value should be a function and lib will send 2 params function(url, data),
+     *                      where url - it is a action name, data - it is a data from $resapi call.
+     *
+     * @param data object - it is data for Axios request, but for some method must be id field (see above, @param path)
+     */
     $Vue.prototype.$apiResource = $Vue.prototype.$resapi = async (path, data) => {
       obj.$vue = this;
       // obj.$store = this.$store;
@@ -420,16 +447,26 @@ const Resolver = {
       return (res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data;
     };
 
+    /**
+     * @param name string - Name of event,  which set at 'updateOn' field of API route resource at routes.js cofig file
+     */
     $Vue.prototype.$resapi.emit = function(name){
-      // console.log('RESAPI emit', obj);
       obj.emitUpdate(name);
     };
+
+    /**
+     * @param headers object - {name_of_header: "this is value of named header", ...}
+     */
     $Vue.prototype.$resapi.setHeaders = (headers) => {
       if(!_.isObject(headers)) {console.error('Headers receive only object!'); return;}
       _.forEach(headers, (v, k) => {
         this.$http.defaults.headers.common[k] = v;
       });
     };
+
+    /**
+     * @param token string - Bearer token for auth
+     */
     $Vue.prototype.$resapi.setAuthJWT = token => {
       // this.$http.defaults.headers.common['Authorization'] = 'Bearer ' + token; // {Authorization: 'Bearer ' + user.token}
       $Vue.prototype.$resapi.setHeaders({Authorization: 'Bearer ' + token});
@@ -438,6 +475,13 @@ const Resolver = {
       //   this.startSocket(token);
 
     };
+
+    /**
+     * @param token string - Bearer token for auth
+     * @param userId integer - user id for Laravel Echo node server
+     *
+     * In routers.js you must set post in 'socket' field.
+     */
     $Vue.prototype.$resapi.startEchoChannel = (token, userId) => {
       if(this.$socket && !this.$channel)
         this.startSocket(token, userId);

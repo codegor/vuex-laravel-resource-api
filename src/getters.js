@@ -16,7 +16,7 @@ const act = { //actions
     conf[f] = v;
     return _.filter(r, conf);
   },
-  formatte(r, f, k){ // change formatte of element - many to many relation
+  formatte(r, f, k){ // change format of element - many to many relation
     let res = [];
     _.each(r, (v) =>{
       let c = _.clone(v);
@@ -105,42 +105,162 @@ const act = { //actions
 };
 
 export default {
+  /**
+   * Get only present items from DB data, without deleted items
+   * filtered by "deleted_at == null"
+   *
+   * @return array
+   */
   present: resource => {
     return act.present(resource);
   },
+
+  /**
+   * Get only present items from DB data, without deleted items, and filter that result by @param field with @param val
+   *
+   * @return function(val, field);
+   *
+   * returned function params:
+   * @param val string - value for filtering
+   * @param field string - field for filtering
+   *
+   * @returnd_function_return array
+   *
+   * @example
+   *   in routers.js:
+   *     getters: [presentFilter]
+   *   in code:
+   *     let data = this.presentFilterManager(this.user_id, 'user_id');
+   */
   presentFilter: (resource) => (val, field) => {
     return act.filter(act.present(resource), val, field);
   },
+
+  /**
+   * It is like presentFilter(), but without present filter.
+   *
+   * @return function(val, field);
+   *
+   * see above
+   */
   filter: (resource) => (val, field) => {
     return act.filter(resource, val, field);
   },
+
+  /**
+   * Filter data by field and value like above, but with different operation, variants: '>', '>=', '<', '<=', '==', '!='
+   *
+   * @return function(field, operation, val);
+   *
+   * returned function params:
+   * @param val string - value for filtering
+   * @param field string - field for filtering
+   * @param operation string from ['>', '>=', '<', '<=', '==', '!=']
+   */
   filterDate: (resource) => (field, operation, val) => {
     return act.filterDate(resource, field, operation, val);
   },
+
+  /**
+   * It is like filterDate(), but with present filter.
+   *
+   * @return function(field, operation, val);
+   *
+   * see above
+   */
   presentFilterDate: (resource) => (field, operation, val) => {
     return act.filterDate(act.present(resource), field, operation, val);
   },
+
+  /**
+   * It is like presentFilterDate(), but with pre filter by @param fd_field and array of values for this field.
+   *
+   * @param fd_field string - field for filtering
+   * @param fd_val array - In config to fd_val gets all after first param; example: 'presentFilterDateFiltered:field,val1,val2,val3'
+   *
+   * @return function(field, operation, val);
+   *
+   * see above
+   */
   presentFilterDateFiltered: (resource, fd_field, ...fd_val) => (field, operation, val) => {
     return act.filterDate(act.filterArray(act.present(resource), fd_field, fd_val), field, operation, val);
   },
+
+  /**
+   * It is like presentFilterDateFiltered(), but with change format of element - transform Laravel many to many relation.
+   *
+   * @param fr_field string foreign table name
+   * @param fr_key string key in foreign table
+   *
+   * @return function(field, operation, val);
+   *
+   * see above
+   */
   presentFilterDateFilteredFormatted: (resource, fr_field, fr_key, fd_field, ...fd_val) => (field, operation, val) => {
     return act.formatte(act.filterDate(act.filterArray(act.present(resource), fd_field, fd_val), field, operation, val), fr_field, fr_key);
   },
+
+  /**
+   * Filter present() items by @param field and array of values for this field.
+   *
+   * @param filed string - field for filtering
+   * @param val array - In config to fd_val gets all after first param; example: 'presentFiltered:field,val1,val2,val3'
+   *
+   * @return array
+   */
   presentFiltered: (resource, field, ...val) => {
     return act.filterArray(act.present(resource), field, val);
   },
+
+  /**
+   * Filter by @param field and array of values for this field.
+   *
+   * @param filed string - field for filtering
+   * @param val array - In config to fd_val gets all after first param; example: 'presentFiltered:field,val1,val2,val3'
+   *
+   * @return array
+   */
   filtered: (resource, field, ...val) => {
     return act.filterArray(resource, field, val);
   },
+
+  /**
+   * Formatter which change format of element - transform Laravel many to many relation
+   *
+   * @param field string foreign table name
+   * @param key string key in foreign table
+   *
+   * @return array
+   */
   presentFormatted: (resource, field, key) => { // field and set with `:field,key`
     return act.present(act.formatte(resource, field, key));
   },
+
+  /**
+   * Return present items but like object, whete key is id form collection
+   *
+   * @return object || array (if function cannot find id key)
+   */
   presentByKey: resource => {
     return act.byKey(act.present(resource));
   },
+
+  /**
+   * Return items but like object, where key is id form collection
+   *
+   * @return object || array (if function cannot find id key)
+   */
   byKey: resource => {
     return act.byKey(resource);
   },
+
+  /**
+   * Return items but like object, where key is @param 'key' form collection
+   *
+   * @param key string - name of col for set key for row of collection
+   *
+   * @retrun object || array (if function cannot find key in collection from 'key' @param)
+   */
   byCustKey: (resource, key) => {
     return act.byCustKey(resource, key);
   },
@@ -172,6 +292,13 @@ export default {
     }
     return act.byKey(act.present(act.formatte(resource, field, key)));
   },
+
+  /**
+   * Find item of collection with later definition of condition
+   *
+   * @return function(val, field);
+   * @then_return any - item of collection with this condition
+   */
   filterByVal: (resource) => (val, field) => {
     return resource.find(todo => todo[field] === val)
   },
