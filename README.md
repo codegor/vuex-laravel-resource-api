@@ -167,7 +167,7 @@ First you need create in store vuex folder module api, then create at that folde
  You can set (at route config file for resource (action) field: _**'updateSocket'**_) update API data by event from Echo. 
  REST API will be listen Laravel-WebSocket.IO event (name like route resource key) from 'api' channel.
  (For this functionality you should set in routes.js _**'socket'**_ field with port number of current server for WS connection, 
- for example ':6001', or set to empty string like '' for disable its.)
+ for example ':6001', or set to empty string like ''.)
  
  Or you can use long pooling: _**'updateTimer'**_ field of action config at routes.js.
  
