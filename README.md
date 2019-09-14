@@ -4,6 +4,7 @@
 Easy Vuex api request when at Laravel you use REST Controller.
 
 **Installation**
+
 npm install vuex-laravel-resource-api
 
 **How to use?**
