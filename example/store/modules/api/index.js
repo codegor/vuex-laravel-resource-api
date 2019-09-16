@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import routes from './routes';
-import Resolver from 'vuex-laravel-rest-api';
+import Resolver from 'vuex-laravel-resource-api';
 import socket from 'vuex-laravel-resource-api/src/socket.io';
 
 /** if you need message add showMess vue global method, example below */
