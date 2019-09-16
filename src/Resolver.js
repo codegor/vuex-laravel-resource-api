@@ -392,9 +392,9 @@ const Resolver = {
           if(_.has(error, 'response') && _.has(error.response, 'status')) {
             let s = error.response.status;
             if (_.has(obj.errorMes, s))
-              obj.errorMes[s](error);
+              obj.errorMes[s](error, obj);
             else
-              obj.errorMes.def(error);
+              obj.errorMes.def(error, obj);
           }
 
           if(obj.debug) console.dir(error);
