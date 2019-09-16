@@ -375,6 +375,8 @@ const Resolver = {
 
   install($Vue, options) {
     let obj = this;
+    obj.$vue = $Vue;
+
     this.$http = axios.create(); //Vue.prototype.$http;
     if(this.$socket){
       // this.$http.defaults.headers.common['X-Socket-Id'] = this.$socket.socketId();
@@ -441,8 +443,6 @@ const Resolver = {
      * @param data object - it is data for Axios request, but for some method must be id field (see above, @param path)
      */
     $Vue.prototype.$apiResource = $Vue.prototype.$resapi = async (path, data) => {
-      obj.$vue = this;
-      // obj.$store = this.$store;
       let res = await obj.resolve(path, data);
       return (res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data;
     };
