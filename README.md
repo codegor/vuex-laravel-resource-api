@@ -218,7 +218,7 @@ Getters file consist fom 2 part: 1 part it is a help constant, and second part i
 Getters come in 3 types:
  1) without params
  2) with params
- 3) and with return function from getters
+ 3) first or second but with return function from getters
  
  If getters with params, in routes.js in action config in getters field you should set those params are through the colon:
  ```javascript
