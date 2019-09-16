@@ -1,13 +1,28 @@
 # vuex-laravel-resource-api
-**Library for Vuex+Laravel REST Controller API**
+
+[![Source](http://img.shields.io/badge/source-codegor/vuex--laravel--resource--api-blue.svg?style=flat-square)](https://github.com/codegor/vuex-laravel-resource-api/)
+[![Build Status](http://img.shields.io/travis/codegor/vuex--laravel--resource--api/l/master.svg?style=flat-square)](https://travis-ci.org/codegor/vuex-laravel-resource-api/)
+[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](https://tldrlegal.com/license/mit-license)
+[![Total Downloads](http://img.shields.io/packagist/dt/codegor/vuex--laravel--resource--api.svg?style=flat-square)](https://packagist.org/packages/codegor/vuex-laravel-resource-api/)
+
+
+#Library for Vuex+Laravel REST Controller API
 
 Easy Vuex api request when at Laravel you use REST Controller.
 
-**Installation**
+
+# Table of Contents
+* [Installation](#installation)
+* [How to us](#How-to-us)
+* [Description](#description)
+* [Routes.js config](#config)
+* [Getters List](#getters)
+
+# <a name="installation"></a> Installation
 
 npm install vuex-laravel-resource-api
 
-**How to use?**
+# <a name="How-to-us"></a> How to use?
 
 First you need create in store vuex folder module api, then create at that folder 2 files:
  - index.js
@@ -126,6 +141,8 @@ First you need create in store vuex folder module api, then create at that folde
  }
   ``` 
  
+ # <a name="description"></a> Description 
+ 
  The library create global var for its **Axios** instance, you can get it from (usually unnecessary):
  ```javascript
  this.$http
@@ -164,10 +181,12 @@ First you need create in store vuex folder module api, then create at that folde
  this.$resapi.startEchoChannel(token, userId);
  ```
  
+ # <a name="config"></a> Routes.js config 
+ 
  You can set (at route config file for resource (action) field: _**'updateSocket'**_) update API data by event from Echo. 
  REST API will be listen Laravel-WebSocket.IO event (name like route resource key) from 'api' channel.
  (For this functionality you should set in routes.js _**'socket'**_ field with port number of current server for WS connection, 
- for example ':6001', or set to empty string like ''.)
+ for example ':6001', or set to empty string like ''.) Laravel event library for resapi with model example: [Laravel-vuex-resapi](https://packagist.org/packages/codegor/laravel-vuex-resapi)
  
  Or you can use long pooling: _**'updateTimer'**_ field of action config at routes.js.
  
@@ -193,7 +212,7 @@ First you need create in store vuex folder module api, then create at that folde
  It is very convenient for structure row data from DB from Laravel REST API. 
  The list of available getters you can see at **src/getters.js**. You can set your own getters, as you can see on **example/index.js**
  
-_**Getters List**_
+# <a name="getters"></a> Getters List
 
 Getters file consist fom 2 part: 1 part it is a help constant, and second part it is a work of getters.
 Getters come in 3 types:
