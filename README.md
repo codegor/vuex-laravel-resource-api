@@ -6,7 +6,7 @@
 [![Total Downloads](http://img.shields.io/packagist/dt/codegor/vuex--laravel--resource--api.svg?style=flat-square)](https://packagist.org/packages/codegor/vuex-laravel-resource-api/)
 
 
-#Library for Vuex+Laravel REST Controller API
+# Library for Vuex + Laravel REST Controller API
 
 Easy Vuex api request when at Laravel you use REST Controller.
 
