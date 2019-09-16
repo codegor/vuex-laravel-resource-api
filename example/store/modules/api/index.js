@@ -51,9 +51,12 @@ const getters = { //getters mapGetters //computed fields from state var
   ...Resolver.getters() // owners: {}
 };
 
+const plugins = Resolver.plugins();
+
 export default { //export vuex module
   state,
   mutations,
   actions,
-  getters
+  getters,
+  plugins
 }
