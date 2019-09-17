@@ -375,7 +375,7 @@ const Resolver = {
 
   install($Vue, options) {
     let obj = this;
-    obj.$vue = $Vue;
+    // obj.$vue = $Vue;
 
     this.$http = axios.create(); //Vue.prototype.$http;
     if(this.$socket){
@@ -409,9 +409,6 @@ const Resolver = {
     //   created: function () {
     //     if(_.isEmpty(obj.$vue))
     //       obj.$vue = this;
-    //
-    //     if(_.isEmpty(obj.$store))
-    //       obj.$store = this.$store;
     //   }
     // });
 
@@ -442,7 +439,8 @@ const Resolver = {
      *
      * @param data object - it is data for Axios request, but for some method must be id field (see above, @param path)
      */
-    $Vue.prototype.$apiResource = $Vue.prototype.$resapi = async (path, data) => {
+    $Vue.prototype.$apiResource = $Vue.prototype.$resapi = async function(path, data){
+      obj.$vue = this;
       let res = await obj.resolve(path, data);
       return (res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data;
     };
@@ -450,14 +448,14 @@ const Resolver = {
     /**
      * @param name string - Name of event,  which set at 'updateOn' field of API route resource at routes.js cofig file
      */
-    $Vue.prototype.$resapi.emit = function(name){
+    $Vue.prototype.$resapi.emit = name => {
       obj.emitUpdate(name);
     };
 
     /**
      * @param headers object - {name_of_header: "this is value of named header", ...}
      */
-    $Vue.prototype.$resapi.setHeaders = (headers) => {
+    $Vue.prototype.$resapi.setHeaders = headers => {
       if(!_.isObject(headers)) {console.error('Headers receive only object!'); return;}
       _.forEach(headers, (v, k) => {
         this.$http.defaults.headers.common[k] = v;
@@ -468,12 +466,7 @@ const Resolver = {
      * @param token string - Bearer token for auth
      */
     $Vue.prototype.$resapi.setAuthJWT = token => {
-      // this.$http.defaults.headers.common['Authorization'] = 'Bearer ' + token; // {Authorization: 'Bearer ' + user.token}
       $Vue.prototype.$resapi.setHeaders({Authorization: 'Bearer ' + token});
-      //
-      // if(this.$socket && !this.$channel)
-      //   this.startSocket(token);
-
     };
 
     /**
