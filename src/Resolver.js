@@ -375,9 +375,8 @@ const Resolver = {
 
   install($Vue, options) {
     let obj = this;
-    // obj.$vue = $Vue;
 
-    this.$http = axios.create(); //Vue.prototype.$http;
+    this.$http = axios.create();
     if(this.$socket){
       // this.$http.defaults.headers.common['X-Socket-Id'] = this.$socket.socketId();
       this.$http.interceptors.request.use(config => {
@@ -405,12 +404,6 @@ const Resolver = {
       }
     );
     this.debug = $Vue.config.devtools;
-    // $Vue.mixin({
-    //   created: function () {
-    //     if(_.isEmpty(obj.$vue))
-    //       obj.$vue = this;
-    //   }
-    // });
 
     /**
      * @param path string - this filed have 2 connected part: first is the method, and second is the resource
@@ -439,8 +432,7 @@ const Resolver = {
      *
      * @param data object - it is data for Axios request, but for some method must be id field (see above, @param path)
      */
-    $Vue.prototype.$apiResource = $Vue.prototype.$resapi = async function(path, data){
-      obj.$vue = this;
+    $Vue.prototype.$apiResource = $Vue.prototype.$resapi = async (path, data) => {
       let res = await obj.resolve(path, data);
       return (res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data;
     };
@@ -463,10 +455,35 @@ const Resolver = {
     };
 
     /**
+     * If you use JWT Auth, to set Header you can use this function
+     *
      * @param token string - Bearer token for auth
+     *
+     * @example
+     * App.vue {
+     *   created(){
+     *     this.$resapi.setAuthJWT(session_token);
+     *   }
+     * }
      */
     $Vue.prototype.$resapi.setAuthJWT = token => {
       $Vue.prototype.$resapi.setHeaders({Authorization: 'Bearer ' + token});
+    };
+
+    /**
+     * If you want to use auto show message, you need set Vue instance at the App.vue, created() hook
+     *
+     * @param vue object Vue instance
+     *
+     * @example
+     * App.vue {
+     *   created(){
+     *     this.$resapi.setVue(this);
+     *   }
+     * }
+     */
+    $Vue.prototype.$resapi.setVue = vue => {
+      obj.$vue = vue;
     };
 
     /**

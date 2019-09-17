@@ -151,8 +151,17 @@ First you need create in store vuex folder module api, then create at that folde
  **Function** for set Bearer Auth header (will be cool if you set up JWT Token in app.js file or in vuex init file, when init Vue and Vuex):
  ```javascript
   /**
-  * @param token string - Bearer token for auth
-  */
+   * If you use JWT Auth, to set Header you can use this function
+   *
+   * @param token string - Bearer token for auth
+   *
+   * @example
+   * App.vue {
+   *   created(){
+   *     this.$resapi.setAuthJWT(session_token);
+   *   }
+   * }
+   */
   this.$resapi.setAuthJWT(token)
  ```
  
@@ -162,6 +171,23 @@ First you need create in store vuex folder module api, then create at that folde
   * @param headers object - {name_of_header: "this is value of named header", ...}
   */
   this.$resapi.setHeaders(headers)
+ ```
+ 
+ **Function** for set Vue instance, if you will use auto message, you need to set Vue instance:
+ ```javascript
+  /**
+   * If you want to use auto show message, you need set Vue instance at the App.vue, created() hook
+   *
+   * @param vue object Vue instance
+   *
+   * @example
+   * App.vue {
+   *   created(){
+   *     this.$resapi.setVue(this);
+   *   }
+   * }
+   */
+  this.$resapi.setVue(this);
  ```
  
  **Function** for emit event from application, after which all marked resource updated (use somewhere in your code):
@@ -202,7 +228,7 @@ First you need create in store vuex folder module api, then create at that folde
  
  The library also has auto massage after success action (create, update, delete). 
  The library call global method of Vue _**'showMess'**_ for show massage.
- If you want use this functionality, you should to define this global method at **example/index.js**.
+ If you want use this functionality, you should to define this global method at **example/index.js** and set Vue instanse for lib with function _**$resapi.setVue()**_.
  If you want disable this functionality for one or more action (resource) you can set field of config _**"autoMessOff"**_ to true.
  For normal work of auto message you should set _**'name'**_ field of resource at config file.
  
