@@ -43,7 +43,7 @@ First you need create in store vuex folder module api, then create at that folde
  *                      delete = DELETE /id;
  *                    resource - it is a key of routes in config file with fist letter in upper case
  *                    
- *                    example: 'getManager', 'createManager', 'deleteCompanyItem' (see example/routes.js)
+ *                    example: 'getManager', 'createManager', 'deleteCompanyItem' (see example/.../routes.js)
  *                      'deleteCompanyItem' url will be "{prefix} + 'company-item' + '/id'", 
  *                          by default the lib use kebab case (with "-") for transform CamelCase, 
  *                          but you can change to snake (with "_"), if you set in routes.js file 'delimiter' field to "_"; 
@@ -74,7 +74,7 @@ First you need create in store vuex folder module api, then create at that folde
 });
  ``` 
  
- You can use Vuex mapActions, mapGetters for get data from Laravel REST API Controller (example of Vue component, with routes.js from example/routes.js):
+ You can use Vuex mapActions, mapGetters for get data from Laravel REST API Controller (example of Vue component, with routes.js from example/.../routes.js):
  ```javascript
  import _ from 'lodash';
  import {mapGetters, mapActions} from 'vuex';
@@ -228,15 +228,20 @@ First you need create in store vuex folder module api, then create at that folde
  
  The library also has auto massage after success action (create, update, delete). 
  The library call global method of Vue _**'showMess'**_ for show massage.
- If you want use this functionality, you should to define this global method at **example/index.js** and set Vue instanse for lib with function _**$resapi.setVue()**_.
+ If you want use this functionality, you should to define this global method at **example/.../index.js** and set Vue instanse for lib with function _**$resapi.setVue()**_.
  If you want disable this functionality for one or more action (resource) you can set field of config _**"autoMessOff"**_ to true.
  For normal work of auto message you should set _**'name'**_ field of resource at config file.
  
- The library has default error massage (500, 401, 404, unexpected error), and you can change it to your own, as you can see on **example/index.js**.
+ The library has default error massage (500, 401, 404, unexpected error), and you can change it to your own, as you can see on **example/.../index.js**.
  
  The _**'getters'**_ field of resource config set vuex getters for data from API. 
  It is very convenient for structure row data from DB from Laravel REST API. 
- The list of available getters you can see at **src/getters.js**. You can set your own getters, as you can see on **example/index.js**
+ The list of available getters you can see at **src/getters.js**. You can set your own getters, as you can see on **example/.../index.js**
+ 
+ if you need to show, than some api points is under auth protection, you can use help function needAuth({...}) (see **example/.../routes.js**), 
+ all call for method get ('getManager') will be called when Auth will be set, another method (update, load, etc.) will throw console.info().
+ All methods under needAuth will automatic update if you set new Auth with $resapi.setAuthJWT(token), if you need disable this auto update 
+ you can set param _**updateAfterAuthOff: true**_ at action config. 
  
 # <a name="getters"></a> Getters List
 

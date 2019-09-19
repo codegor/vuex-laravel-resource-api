@@ -31,6 +31,9 @@ const Resolver = {
   listeners: {},
   lazyUpdates: {},
   requests: {},
+  callAfterAuth: [],
+  updateAfterAuth: [],
+  auth: false,
   debug: false,
   gettersLib,
   errorMes,
@@ -40,6 +43,7 @@ const Resolver = {
   d: _.invert(['create', 'update']), //data Method (need data field)
   pd: _.invert(['load']), //param Method (data it is param)
   a: _.invert(['get', 'load', 'show']), //access Method (no need update after)
+  c: _.invert(['get']), //store call of Methods when call without Auth, and call when Authenticated
 
   init(router) {
     this.router = router;
@@ -120,6 +124,18 @@ const Resolver = {
       };
 
       p.then(finish, finish);
+    }
+  },
+  emitAfterAuth(authStatus){
+    this.auth = authStatus;
+    if(authStatus){
+      _.each(this.callAfterAuth, (r) => {
+        this.$store.dispatch('update' + _.upperFirst(r));
+      }); // action didn't removed from store, because some times you will need relogin or set another AuthJWT token and all call of method without auth should update
+
+      _.each(this.updateAfterAuth, (r) => {
+        this.$store.dispatch('update' + _.upperFirst(r));
+      });
     }
   },
   showMess(p, met, r){
@@ -204,7 +220,7 @@ const Resolver = {
     }
   },
   validate(path, data){
-    let {m, pm} = this;
+    let {c, m, pm} = this;
     let res = {go:true};
 
     if(!_.isString(path)) {console.error('API Resolver don\'t know what to do - path has not a string type! if you want xhr request use vue.$http or vue.$axios'); return;}
@@ -221,6 +237,23 @@ const Resolver = {
     res = {...res, met, r, u, peculiar: false};
 
     if(!_.has(this.router.actions, r)) {console.error('API Resolver don\'t know what to do - path follow to undefined route!'); return;}
+
+    if(_.has(this.router.actions[r], 'needAuth') && true == this.router.actions[r]['needAuth']){
+      if (_.has(c, met) && !(_.has(this.router.actions[r], 'updateAfterAuthOff') && true == this.router.actions[r]['updateAfterAuthOff'])
+          && !_.includes(this.updateAfterAuth, r))
+        this.updateAfterAuth.push(r);
+
+      if(!this.auth) {
+        if (_.has(c, met)) {
+          if (_.has(this.router.actions[r], 'updateAfterAuthOff') && true == this.router.actions[r]['updateAfterAuthOff']
+            && !_.includes(this.callAfterAuth, r))
+            this.callAfterAuth.push(r);
+        } else
+          if (this.debug) console.info('You ran api request for route with Auth, but Auth has not set, first, set Auth ($resapi.setAuthJWT(token))');
+
+        return;
+      }
+    }
 
     if(_.has(this.router.actions[r], 'methods') && _.has(this.router.actions[r].methods, met)){
       res.peculiar = true;
@@ -468,6 +501,7 @@ const Resolver = {
      */
     $Vue.prototype.$resapi.setAuthJWT = token => {
       $Vue.prototype.$resapi.setHeaders({Authorization: 'Bearer ' + token});
+      obj.emitAfterAuth(!!token);
     };
 
     /**
@@ -503,3 +537,11 @@ const Resolver = {
 
 
 export default Resolver;
+
+export function needAuth(routes){
+  let res = {};
+  _.each(routes, (conf, name) => {
+    res[name] = Object.assign({needAuth: true}, conf);
+  });
+  return res;
+};
