@@ -244,6 +244,8 @@ const Resolver = {
         this.updateAfterAuth.push(r);
 
       if(!this.auth) {
+        if (this.debug) console.log('Auth has not set, store request, and after aet AuthJWT all will be called...');
+
         if (_.has(c, met)) {
           if (_.has(this.router.actions[r], 'updateAfterAuthOff') && true == this.router.actions[r]['updateAfterAuthOff']
             && !_.includes(this.callAfterAuth, r))
