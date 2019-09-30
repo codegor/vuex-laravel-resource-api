@@ -6,6 +6,9 @@ import errorMes from './errorMessage';
 const lazyTime = 100;
 
 const Resolver = {
+  stREQ: 'requesting', // text for state requesting
+  stFIN: 'finish',     // text for state finish request
+
   router: {},
   $http: {},
   $store: {},
@@ -44,6 +47,7 @@ const Resolver = {
   pd: _.invert(['load']), //param Method (data it is param)
   a: _.invert(['get', 'load', 'show']), //access Method (no need update after)
   c: _.invert(['get']), //store call of Methods when call without Auth, and call when Authenticated
+  s: _.invert(['get']), // methods for which check status, and if requesting, stop
 
   init(router) {
     this.router = router;
@@ -109,7 +113,7 @@ const Resolver = {
   },
   status(r, p){
     if(_.isUndefined(p)){
-      this.$store.commit('status'+_.upperFirst(r), 'requesting');
+      this.$store.commit('status'+_.upperFirst(r), this.stREQ);
     } else {
       if(_.has(this.requests, r))
         this.requests[r].concat(p);
@@ -120,11 +124,14 @@ const Resolver = {
         let i = this.requests[r].indexOf(p);
         this.requests[r].splice(i, 1);
         if(0 === this.requests[r].length)
-          this.$store.commit('status'+_.upperFirst(r), 'finish');
+          this.$store.commit('status'+_.upperFirst(r), this.stFIN);
       };
 
       p.then(finish, finish);
     }
+  },
+  isRequesting(r){
+    return this.$store.getters['status'+_.upperFirst(r)] == this.stREQ;
   },
   emitAfterAuth(authStatus){
     this.auth = authStatus;
@@ -219,8 +226,25 @@ const Resolver = {
       });
     }
   },
+
+  /**
+   *
+   * @param path command 'getMeneger'
+   * @param data payload
+   * @return {
+   *          {
+   *           go: boolean,
+   *           met: *, = 'get | load | show | create | update | delete'
+   *           r, = action name 'manager' | 'companyItem'
+   *           u: string, = url
+   *           peculiar: boolean = own methods
+   *          } | {
+   *           go: boolean
+   *          }
+   *         }
+   */
   validate(path, data){
-    let {c, m, pm} = this;
+    let {s, c, m, pm} = this;
     let res = {go:true};
 
     if(!_.isString(path)) {console.error('API Resolver don\'t know what to do - path has not a string type! if you want xhr request use vue.$http or vue.$axios'); return;}
@@ -232,9 +256,14 @@ const Resolver = {
     let d = _.has(this.router, 'delimiter') ? this.router.delimiter : '-';
 
     let met = o.shift(); //method
-    let u = o.join(d); //resourse
-    let r = _.camelCase(u);
+    let u = o.join(d);   // url of resourse
+    let r = _.camelCase(u); // action in routes.js
     res = {...res, met, r, u, peculiar: false};
+
+    if(_.has(s, met) && this.isRequesting(r)){
+      if (this.debug) console.log(`Request for ${r} is calling, skip this call...`);
+      return;
+    }
 
     if(!_.has(this.router.actions, r)) {console.error('API Resolver don\'t know what to do - path follow to undefined route!'); return;}
 
@@ -342,7 +371,7 @@ const Resolver = {
     let r = {};
     _.forEach(this.router.actions, (v, k) => {
       r['get'+_.upperFirst(k)] = async ({ dispatch, commit, state }) => {
-        if(this.debug) console.log('run create '+'get'+_.upperFirst(k));
+        if(this.debug) console.log('run get'+_.upperFirst(k));
         if(_.isNull(state[k])){
           await dispatch('update'+_.upperFirst(k));
         }
