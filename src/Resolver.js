@@ -3,9 +3,8 @@ import axios from 'axios';
 import gettersLib from './getters';
 import errorMes from './errorMessage';
 
-const lazyTime = 100;
-
 const Resolver = {
+  lazyTime: 100,       // time for collect requests and then update all what need once
   stREQ: 'requesting', // text for state requesting
   stFIN: 'finish',     // text for state finish request
 
@@ -36,6 +35,7 @@ const Resolver = {
   requests: {},
   callAfterAuth: [],
   updateAfterAuth: [],
+  updating: [],
   auth: false,
   debug: false,
   gettersLib,
@@ -88,13 +88,13 @@ const Resolver = {
     this.$socket = this.$socket.init(token);
     this.$channel = this.$socket.private('api.'+userId);
   },
-  startTimer(a){
+  startTimer(a){ // auto update from pool requests (timer)
     // if(this.debug) console.log('REST API: update by timer fire!', a, this.timers);
     let obj = this;
     if(_.has(this.timers, a))
       this.timers[a].id = setTimeout(()=>{obj.$store.dispatch('update' + _.upperFirst(a)); if(obj.debug) console.log('REST API: update by timer fire!', a)}, this.timers[a].sec*1000);
   },
-  startListen(a){
+  startListen(a){ // auto update from WS
     if(_.has(this.listeners, a)){
       this.listeners[a]();
       delete this.listeners[a];
@@ -113,6 +113,7 @@ const Resolver = {
   },
   status(r, p){
     if(_.isUndefined(p)){
+      this.startUpdating(r);
       this.$store.commit('status'+_.upperFirst(r), this.stREQ);
     } else {
       if(_.has(this.requests, r))
@@ -123,15 +124,21 @@ const Resolver = {
       let finish = () => {
         let i = this.requests[r].indexOf(p);
         this.requests[r].splice(i, 1);
-        if(0 === this.requests[r].length)
-          this.$store.commit('status'+_.upperFirst(r), this.stFIN);
+        if(0 === this.requests[r].length) {
+          this.$store.commit('status' + _.upperFirst(r), this.stFIN);
+          this.stopUpdating(r);
+        }
       };
 
       p.then(finish, finish);
     }
   },
-  isRequesting(r){
-    return this.$store.getters['status'+_.upperFirst(r)] == this.stREQ;
+  startUpdating(r){
+    if(!_.includes(this.updating, r))
+     this.updating.push(r);
+  },
+  stopUpdating(r){
+    _.pull(this.updating, r);
   },
   emitAfterAuth(authStatus){
     this.auth = authStatus;
@@ -184,7 +191,7 @@ const Resolver = {
       let np = this.lazyUpdates[r].p;
       delete(this.lazyUpdates[r]);
       obj.update(Promise.all(np), r);
-    }, lazyTime);
+    }, this.lazyTime);
   },
   update(p, r){
     let u = []; // updated from update field
@@ -260,7 +267,7 @@ const Resolver = {
     let r = _.camelCase(u); // action in routes.js
     res = {...res, met, r, u, peculiar: false};
 
-    if(_.has(s, met) && this.isRequesting(r)){
+    if(_.has(s, met) && _.includes(this.updating, r)){
       if (this.debug) console.log(`Request for ${r} is calling, skip this call...`);
       return;
     }
@@ -361,7 +368,7 @@ const Resolver = {
   mutations(){
     let r = {};
     _.forEach(this.router.actions, (v, k) => {
-      r['raSet'+_.upperFirst(k)] = (state, data) => {if(this.debug) console.log('setted '+'raSet'+_.upperFirst(k), data); state[k] = data;};
+      r['resapi'+_.upperFirst(k)] = (state, data) => {if(this.debug) console.log('setted '+'resapi'+_.upperFirst(k), data); state[k] = data;};
       r['status'+_.upperFirst(k)] = (state, status) => {if(this.debug) console.log('setted '+'status'+_.upperFirst(k), status); state[k+'State'] = status;};
     });
     return r;
@@ -379,10 +386,10 @@ const Resolver = {
       r['update'+_.upperFirst(k)] = async ({ commit, state }) => {
         obj.startTimer(k);
         obj.startListen(k);
-        if(this.debug) console.log('run update '+'update'+_.upperFirst(k));
+        if(this.debug) console.log('run update '+_.upperFirst(k));
         try{
           let res = await this.resolve('get'+_.upperFirst(k));
-          commit('raSet'+_.upperFirst(k), !_.isEmpty(res.data.data) ? ((res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data) : {});
+          commit('resapi'+_.upperFirst(k), !_.isEmpty(res.data.data) ? ((res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data) : {});
         } catch (exception) {
 
         }
