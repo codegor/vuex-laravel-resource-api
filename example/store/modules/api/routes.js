@@ -21,15 +21,20 @@ export default { // example of api routing for laravel resources rest api
         autoMessOff: true, // if need turn off message after success api request
         name: 'Manager', // name for auto message which will be inserted to
 //      getters: [], // if we need calculated fields there we can write it. Name will be curent name + resourse name, like examplManager or can be listed from getters lib like [string, string] or {name:'getter1', name2:'getter2'} (operate only with resource state var)
-        getters: ['groupedTree:project_id,id,parent_id,name', 'sumUniq:url,size'], // example: 'byKey'
-//    getters: { //or you can add your own getter function or rename gatters from default lib
-//        present: state => { // add getter with name 'present'
-//          return _.filter(state.manager, { 'deleted_at': null });
+        getters: ['groupedTree:project_id,id,parent_id,name', 'sumUniq:url,size', // example: 'byKey'
+          'sumUniq:url,size|byCustKey:name',                // use chain of getters (name will be from first getters)
+          'sumUniqFiltered>sumUniq:url,size|byCustKey:name' // use chain of getters with set name of getters
+        ],
+//    getters: { // or you can add your own getter function or rename gatters from default lib
+//        presentMy: data => {                // add getter with name 'presentMy'
+//          return _.filter(data, { 'deleted_at': null });
 //        },
-//        byKey: state => { // add getter with name 'byKey'
-//          return _.keyBy(state.manager, 'id');
+//        byKey: data => {                    // add getter with name 'byKey'
+//          return _.keyBy(data, 'id');
 //        },
 //        myCoolKey: 'sumUniq:url,size'
+//        myCoolKeyFiltered: 'sumUniq:url,size|byCustKey:name' // use chain of getters (name will be from key of var)
+//        presentMyByKey: 'presentMy|byKey',  // you can use your own getters, defined in this object
 //      }
       },
     }),

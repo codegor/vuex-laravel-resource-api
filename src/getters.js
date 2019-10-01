@@ -102,6 +102,15 @@ const act = { //actions
   uniq(r,f){ // get unic items from resource (r) by field f
     return _.uniqBy(_.values(r),f);
   },
+  jsonParse(r, fs){
+    let res = _.cloneDeep(r);
+    _.each(r, (v, k) => {
+      _.each(fs, f => {
+        res[k][f] = JSON.parse(res[k][f]);
+      });
+    });
+    return res;
+  }
 };
 
 export default {
@@ -353,6 +362,7 @@ export default {
   group: (resource, field) => act.groupBy(resource, field),
   sum: (resource, field) => act.sum(resource, field),
   sumUniq: (resource, unicfield, sumfield) => act.sum(act.uniq(resource, unicfield), sumfield),
+  jsonParse: (resource, ...fields) => act.jsonParse(resource, fields),
 }
 
 

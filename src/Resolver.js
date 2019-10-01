@@ -399,36 +399,68 @@ const Resolver = {
   },
   getters(){
     let r = {};
-    let getNameOf = function(name){
-      name = _.split(name, ':');
-      let vars = [];
-      if(_.isString(name[1]))
-        vars = _.map(_.split(name[1], ','), _.trim);
+    let getNameOf = function(getts){
+      let name  = (-1 != _.indexOf(getts, '>')) ? _.split(getts, '>')[0] : '';
+      let data  = (-1 != _.indexOf(getts, '>')) ? _.split(getts, '>')[1] : getts;
+      let get = (g) => {
+        g = _.split(g, ':');
+        let n = g[0]; // name of getter
+        let v  = []; // vars for getter
+        if(_.isString(g[1]))
+          v = _.map(_.split(g[1], ','), _.trim);
 
-      name = name[0];
+        return {name:n, vars: v};
+      };
+      let chain = [];
 
-      return {name, vars};
+      getts  = (-1 != _.indexOf(data, '|')) ? _.split(data, '|') : [data];
+
+      _.each(getts, gett => {
+        let d = get(gett);
+
+        if('' === name)
+          name = d.name;
+
+        chain.push(d);
+      });
+
+      return {name, chain};
     };
-    _.forEach(this.router.actions, (v, k) => {
-      r[k] = state => state[k]; // add itself getter
-      r[k+'Status'] = state => state[k+'State'];
+    _.each(this.router.actions, (v, k) => {
+      r[k] = state => state[k];                  // add itself getter
+      r[k+'Status'] = state => state[k+'State']; // add getter for itself status
+
       if(_.has(v, 'getters') && !_.isEmpty(v.getters)){
-        _.forEach(v.getters, (vv, kk) => { // ['present', 'byKey'] || {byKeyName: byKey, presentName: present}
+        _.each(v.getters, (vv, kk) => { // ['present', 'byKey', 'name>byKey|present'] || {byKeyName: byKey, presentName: present}
           if(_.isArray(v.getters)){
             let conf = getNameOf(vv);
-            if(_.has(this.gettersLib, conf.name)){
-              r[conf.name+_.upperFirst(k)] = state => this.gettersLib[conf.name](state[k], ...conf.vars);
-            } else
-              console.error(`Unknown API getter ${vv}`);
-          } else {
+            r[conf.name+_.upperFirst(k)] = state => {
+              let res = state[k];
+              _.each(conf.chain, gett => {
+                if(_.has(this.gettersLib, gett.name)){
+                  res = this.gettersLib[gett.name](res, ...gett.vars);
+                } else
+                  console.error(`Unknown API getter ${vv} (${gett.name})`);
+              });
+              return res;
+            }
+          } else { // seems getters is object
             if(_.isFunction(vv))
-              r[kk+_.upperFirst(k)] = vv;
+              r[kk+_.upperFirst(k)] = state => vv(state[k]);
             else {
               let conf = getNameOf(vv);
-              if(_.has(this.gettersLib, conf.name)){
-                r[kk+_.upperFirst(k)] = state => this.gettersLib[conf.name](state[k], ...conf.vars);
-              } else
-                console.error(`Unknown API getter ${vv}`);
+              r[kk+_.upperFirst(k)] = state => {
+                let res = state[k];
+                _.each(conf.chain, gett => {
+                  if(_.has(this.gettersLib, gett.name)){
+                    res = this.gettersLib[gett.name](res, ...gett.vars);
+                  } else if(_.has(v.getters, gett.name)){
+                    res = v.getters[gett.name](res, ...gett.vars);
+                  } else
+                    console.error(`Unknown API getter ${vv} (${gett.name})`);
+                });
+                return res;
+              };
             }
           }
         });

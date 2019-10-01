@@ -488,4 +488,9 @@ sum(field);
 * @return number
 */
 sumUniq(unicfield, sumfield);
+
+/**
+* convert from JSON to object for this fields
+*/
+jsonParse(...fields)
 ```
