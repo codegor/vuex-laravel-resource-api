@@ -245,6 +245,8 @@ First you need create in store vuex folder module api, then create at that folde
  
 # <a name="getters"></a> Getters List
 
+NEW: for now you can create chain of getters with '|' symbol, see routes.js for example.
+
 Getters file consist fom 2 part: 1 part it is a help constant, and second part it is a work of getters.
 Getters come in 3 types:
  1) without params

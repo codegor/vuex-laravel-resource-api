@@ -106,7 +106,8 @@ const act = { //actions
     let res = _.cloneDeep(r);
     _.each(r, (v, k) => {
       _.each(fs, f => {
-        res[k][f] = JSON.parse(res[k][f]);
+        try { res[k][f] = JSON.parse(res[k][f]); }
+        catch (err) { console.err('RESAPI Error: getter jsonParse has an error, for col '+f); }
       });
     });
     return res;
