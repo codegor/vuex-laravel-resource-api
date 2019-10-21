@@ -44,6 +44,7 @@ const Resolver = {
   m: _.invert(['get', 'load', 'show', 'create', 'update', 'delete']), //methods
   pm: _.invert(['show', 'update', 'delete']), //paramMethod (need id)
   d: _.invert(['create', 'update']), //data Method (need data field)
+  md: _.invert(['delete']), //if data present data will be attached
   pd: _.invert(['load']), //param Method (data it is param)
   a: _.invert(['get', 'load', 'show']), //access Method (no need update after)
   c: _.invert(['get']), //store call of Methods when call without Auth, and call when Authenticated
@@ -135,7 +136,7 @@ const Resolver = {
   },
   startUpdating(r){
     if(!_.includes(this.updating, r))
-     this.updating.push(r);
+      this.updating.push(r);
   },
   stopUpdating(r){
     _.pull(this.updating, r);
@@ -276,7 +277,7 @@ const Resolver = {
 
     if(_.has(this.router.actions[r], 'needAuth') && true == this.router.actions[r]['needAuth']){
       if (_.has(c, met) && !(_.has(this.router.actions[r], 'updateAfterAuthOff') && true == this.router.actions[r]['updateAfterAuthOff'])
-          && !_.includes(this.updateAfterAuth, r))
+        && !_.includes(this.updateAfterAuth, r))
         this.updateAfterAuth.push(r);
 
       if(!this.auth) {
@@ -286,8 +287,8 @@ const Resolver = {
           if (_.has(this.router.actions[r], 'updateAfterAuthOff') && true == this.router.actions[r]['updateAfterAuthOff']
             && !_.includes(this.callAfterAuth, r))
             this.callAfterAuth.push(r);
-        } else
-          if (this.debug) console.info('You ran api request for route with Auth, but Auth has not set, first, set Auth ($resapi.setAuthJWT(token))');
+        } else if (this.debug)
+          console.info('You ran api request for route with Auth, but Auth has not set, first, set Auth ($resapi.setAuthJWT(token))');
 
         return;
       }
@@ -321,7 +322,7 @@ const Resolver = {
   },
 
   resolve(path, data) { //path = action + api name of Resourse. actions - get, show, update, create, delete and etc
-    let {pm, d, pd} = this;
+    let {pm, d, pd, md} = this;
     let t = {get: 'get', load: 'get', show: 'get', create: 'post', update: 'put', delete: 'delete'}; // transform
 
     let {u, r, met, go, peculiar} = this.validate(path, data);
@@ -342,12 +343,12 @@ const Resolver = {
         url: url + ((_.has(pm, met)) ? '/' + data.id : '')
       };
 
-      if (_.has(d, met)) {
+      if (_.has(d, met) || (_.has(md, met) && 1 < Object.getOwnPropertyNames(data).length))
         c.data = data;
-      }
-      if (_.has(pd, met)) {
+
+      if (_.has(pd, met))
         c.params = data;
-      }
+
 
       p = this.$http(c);
     }
@@ -485,7 +486,7 @@ const Resolver = {
       this.$http.interceptors.request.use(config => {
         if (obj.$socket.socketId)
           config.headers['X-Socket-Id'] = obj.$socket.socketId();
-          // if(obj.debug ) console.log('SOCKET_ID', obj.$socket.socketId());
+        // if(obj.debug ) console.log('SOCKET_ID', obj.$socket.socketId());
         return config;
       });
     }
