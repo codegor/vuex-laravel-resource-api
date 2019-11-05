@@ -7,6 +7,7 @@ const Resolver = {
   lazyTime: 100,       // time for collect requests and then update all what need once
   stREQ: 'requesting', // text for state requesting
   stFIN: 'finish',     // text for state finish request
+  defTargetMethodCashValidTime: 10*60, // 10*60 seconds - time throw which data in the cash will be valid
 
   router: {},
   $http: {},
@@ -42,12 +43,13 @@ const Resolver = {
   errorMes,
 
   m: _.invert(['get', 'load', 'show', 'create', 'update', 'delete']), //methods
-  pm: _.invert(['show', 'update', 'delete']), //paramMethod (need id)
+  pm:_.invert(['show', 'update', 'delete']), //paramMethod (need id)
   d: _.invert(['create', 'update']), //data Method (need data field)
-  md: _.invert(['delete']), //if data present data will be attached
-  pd: _.invert(['load']), //param Method (data it is param)
+  md:_.invert(['delete']), //if data present data will be attached
+  pd:_.invert(['load']), //param Method (data it is param)
   a: _.invert(['get', 'load', 'show']), //access Method (no need update after)
   c: _.invert(['get']), //store call of Methods when call without Auth, and call when Authenticated
+  wa:_.invert(['load', 'show']), // methods which can be call without Authenticate, if set withoutAuthTargetMethods param for route
   s: _.invert(['get']), // methods for which check status, and if requesting, stop
 
   init(router) {
@@ -252,7 +254,7 @@ const Resolver = {
    *         }
    */
   validate(path, data){
-    let {s, c, m, pm} = this;
+    let {s, c, wa, m, pm} = this;
     let res = {go:true};
 
     if(!_.isString(path)) {console.error('API Resolver don\'t know what to do - path has not a string type! if you want xhr request use vue.$http or vue.$axios'); return;}
@@ -275,13 +277,14 @@ const Resolver = {
 
     if(!_.has(this.router.actions, r)) {console.error('API Resolver don\'t know what to do - path follow to undefined route!'); return;}
 
-    if(_.has(this.router.actions[r], 'needAuth') && true == this.router.actions[r]['needAuth']){
+    if(_.has(this.router.actions[r], 'needAuth') && true == this.router.actions[r]['needAuth'] &&
+      !(_.has(wa, met) && _.has(this.router.actions[r], 'withoutAuthTargetMethods') && true == this.router.actions[r]['withoutAuthTargetMethods'])){
       if (_.has(c, met) && !(_.has(this.router.actions[r], 'updateAfterAuthOff') && true == this.router.actions[r]['updateAfterAuthOff'])
         && !_.includes(this.updateAfterAuth, r))
         this.updateAfterAuth.push(r);
 
       if(!this.auth) {
-        if (this.debug) console.log('Auth has not set, store request, and after aet AuthJWT all will be called...');
+        if (this.debug) console.log('Auth has not set, store request, and after set AuthJWT all will be called...');
 
         if (_.has(c, met)) {
           if (_.has(this.router.actions[r], 'updateAfterAuthOff') && true == this.router.actions[r]['updateAfterAuthOff']
@@ -363,6 +366,10 @@ const Resolver = {
     _.each(this.router.actions, (v, k) => {
       r[k] = null;
       r[k+'State'] = null;
+      if(!(_.has(v, 'loadMethodCashOff') && true == v['loadMethodCashOff']))
+        r[k+'CashLoad'] = {};
+      if(!(_.has(v, 'showMethodCashOff') && true == v['showMethodCashOff']))
+        r[k+'CashShow'] = {};
     });
     return r;
   },
@@ -371,6 +378,17 @@ const Resolver = {
     _.forEach(this.router.actions, (v, k) => {
       r['resapi'+_.upperFirst(k)] = (state, data) => {if(this.debug) console.log('setted '+'resapi'+_.upperFirst(k), data); state[k] = data;};
       r['status'+_.upperFirst(k)] = (state, status) => {if(this.debug) console.log('setted '+'status'+_.upperFirst(k), status); state[k+'State'] = status;};
+
+      if(!(_.has(v, 'loadMethodCashOff') && true == v['loadMethodCashOff']))
+        r['cashLoad'+_.upperFirst(k)] = (state, {params, resp}) => {
+          if(this.debug) console.log('setted '+'cashLoad'+_.upperFirst(k), params, resp);
+          state[k+'CashLoad'][JSON.stringify(params)] =  {time: Date.now(), resp: resp};
+        };
+      if(!(_.has(v, 'showMethodCashOff') && true == v['showMethodCashOff']))
+        r['cashShow'+_.upperFirst(k)] = (state, {params, resp}) => {
+          if(this.debug) console.log('setted '+'cashShow'+_.upperFirst(k), params, resp);
+          state[k+'CashShow'][JSON.stringify(params)] = {time: Date.now(), resp: resp};
+        };
     });
     return r;
   },
@@ -378,13 +396,13 @@ const Resolver = {
     let obj = this;
     let r = {};
     _.forEach(this.router.actions, (v, k) => {
-      r['get'+_.upperFirst(k)] = async ({ dispatch, commit, state }) => {
+      r['get'+_.upperFirst(k)] = async ({ dispatch, state }) => {
         if(this.debug) console.log('run get'+_.upperFirst(k));
         if(_.isNull(state[k])){
           await dispatch('update'+_.upperFirst(k));
         }
       };
-      r['update'+_.upperFirst(k)] = async ({ commit, state }) => {
+      r['update'+_.upperFirst(k)] = async ({ commit }) => {
         obj.startTimer(k);
         obj.startListen(k);
         if(this.debug) console.log('run update '+_.upperFirst(k));
@@ -395,6 +413,65 @@ const Resolver = {
 
         }
       };
+
+      if(!(_.has(v, 'loadMethodCashOff') && true == v['loadMethodCashOff'])) {
+        r['load' + _.upperFirst(k)] = async ({dispatch, state}, params) => {
+          if (this.debug) console.log('run load' + _.upperFirst(k), params);
+          let paramKey = JSON.stringify(params);
+          if (_.has(state[k+'CashLoad'], paramKey)) {
+            let liveTime = _.has(v, 'loadMethodCashUpdate') ? v['loadMethodCashUpdate'] : this.defTargetMethodCashValidTime;
+
+            if(('number' == typeof liveTime && Date.now() <= state[k+'CashShow'][paramKey].time+(liveTime*1000)) || 'socket' === liveTime)
+              return state[k+'CashLoad'][paramKey].resp;
+            else
+              return await dispatch('updateLoad' + _.upperFirst(k), params);
+
+          } else
+            return await dispatch('updateLoad' + _.upperFirst(k), params);
+        };
+        r['updateLoad'+_.upperFirst(k)] = async ({ commit }, params) => {
+          // obj.startListen(k); // TODO: uncomment when socket update will be work on
+          if(this.debug) console.log('run update cashLoad'+_.upperFirst(k));
+          let resp = {};
+          try{
+            let res = await this.resolve('load'+_.upperFirst(k), params);
+            resp = !_.isEmpty(res.data.data) ? ((res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data) : {};
+            commit('cashLoad'+_.upperFirst(k), {params, resp});
+          } catch (exception) {
+
+          }
+          return resp;
+        };
+      }
+      if(!(_.has(v, 'showMethodCashOff') && true == v['showMethodCashOff'])) {
+        r['show' + _.upperFirst(k)] = async ({dispatch, state}, params) => {
+          if (this.debug) console.log('run show' + _.upperFirst(k), params);
+          let paramKey = JSON.stringify(params);
+          if (_.has(state[k+'CashShow'], paramKey)) {
+            let liveTime = _.has(v, 'showMethodCashUpdate') ? v['showMethodCashUpdate'] : this.defTargetMethodCashValidTime;
+
+            if(('number' == typeof liveTime && Date.now() <= state[k+'CashShow'][paramKey].time+(liveTime*1000)) || 'socket' === liveTime)
+              return state[k+'CashShow'][paramKey].resp;
+            else
+              return await dispatch('updateShow' + _.upperFirst(k), params);
+
+          } else
+            return await dispatch('updateShow' + _.upperFirst(k), params);
+        };
+        r['updateShow'+_.upperFirst(k)] = async ({ commit }, params) => {
+          // obj.startListen(k); // TODO: uncomment when socket update will be work on
+          if(this.debug) console.log('run update cashShow'+_.upperFirst(k));
+          let resp = {};
+          try{
+            let res = await this.resolve('show'+_.upperFirst(k), params);
+            resp = !_.isEmpty(res.data.data) ? ((res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data) : {};
+            commit('cashShow'+_.upperFirst(k), {params, resp});
+          } catch (exception) {
+
+          }
+          return resp;
+        };
+      }
     });
     return r;
   },

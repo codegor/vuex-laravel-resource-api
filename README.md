@@ -243,9 +243,21 @@ First you need create in store vuex folder module api, then create at that folde
  All methods under needAuth will automatic update if you set new Auth with $resapi.setAuthJWT(token), if you need disable this auto update 
  you can set param _**updateAfterAuthOff: true**_ at action config. 
  
+ **_NEW:_**
+ 
+ If you need make exclusion for auth load or/and show method you can set param _**withoutAuthTargetMethods**_: true for route, 
+ and load and show method will be available without authentication.
+ 
+ By default for method show and load enabled cash. If you want to disable or you don't use this functionality you can disable it 
+ if you set **_loadMethodCashOff_**:true or/and **_showMethodCashOff_**:true. If you want to use cash, 
+ you can call vuex action **_'load'+_route_name__** (example 'loadManger') or **_'show'+_route_name__** (example 'showManger').
+ You can set time for valid cash data with **_showMethodCashUpdate_** and **_loadMethodCashUpdate_** params (by default set 10 minutes).
+ 
+ 
+ 
 # <a name="getters"></a> Getters List
 
-NEW: for now you can create chain of getters with '|' symbol, see routes.js for example.
+You can create chain of getters with '|' symbol, see routes.js for example.
 
 Getters file consist fom 2 part: 1 part it is a help constant, and second part it is a work of getters.
 Getters come in 3 types:
