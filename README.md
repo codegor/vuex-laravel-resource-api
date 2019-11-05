@@ -238,12 +238,10 @@ First you need create in store vuex folder module api, then create at that folde
  It is very convenient for structure row data from DB from Laravel REST API. 
  The list of available getters you can see at **src/getters.js**. You can set your own getters, as you can see on **example/.../index.js**
  
- if you need to show, than some api points is under auth protection, you can use help function needAuth({...}) (see **example/.../routes.js**), 
+ If you need to show, than some api points is under auth protection, you can use help function needAuth({...}) (see **example/.../routes.js**), 
  all call for method get ('getManager') will be called when Auth will be set, another method (update, load, etc.) will throw console.info().
  All methods under needAuth will automatic update if you set new Auth with $resapi.setAuthJWT(token), if you need disable this auto update 
  you can set param _**updateAfterAuthOff: true**_ at action config. 
- 
- **_NEW:_**
  
  If you need make exclusion for auth load or/and show method you can set param _**withoutAuthTargetMethods**_: true for route, 
  and load and show method will be available without authentication.
@@ -253,6 +251,12 @@ First you need create in store vuex folder module api, then create at that folde
  you can call vuex action **_'load'+_route_name__** (example 'loadManger') or **_'show'+_route_name__** (example 'showManger').
  You can set time for valid cash data with **_showMethodCashUpdate_** and **_loadMethodCashUpdate_** params (by default set 10 minutes).
  
+ 
+ **_NEW:_**
+ 
+ For now you can set getters for load and show method (cashed data): **_showGetters_** and **_loadGetters_** params. 
+ All rule for getters param can be applied for the params. 
+ Response of load method should be a collection, response of show method should be a object of resource. 
  
  
 # <a name="getters"></a> Getters List

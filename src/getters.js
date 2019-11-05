@@ -107,7 +107,7 @@ const act = { //actions
     _.each(r, (v, k) => {
       _.each(fs, f => {
         try { res[k][f] = JSON.parse(res[k][f]); }
-        catch (err) { console.err('RESAPI Error: getter jsonParse has an error, for col '+f); }
+        catch (err) { console.error('RESAPI Error: getter jsonParse has an error, for col '+f); }
       });
     });
     return res;

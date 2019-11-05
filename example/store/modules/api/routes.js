@@ -17,8 +17,10 @@ export default { // example of api routing for laravel resources rest api
 //      lazyUpdateOff: true, // if need turn off lazyupdate
 //      loadMethodCashOff: true, // if you need turn off create Store var for load method (switch off cash for load method)
 //      loadMethodCashUpdate: 60, // num of seconds (default 10*60 sec) or string 'socket' (this is on development, sorry) - param for control cash data updated (data will updated after xxx seconds or will auto updated from WS)
+//      loadGetters: [], // getters for action load, will be action name 'load'+_getter_name_+_route_name_, example: 'loadSumUniqManager' (all rule for set getters can be applied, see below param getters)
 //      showMethodCashOff: true, // if you need turn off create Store var for show method (switch off cash for show method)
 //      showMethodCashUpdate: 60, // num of seconds (default 10*60 sec) or string 'socket' (this is on development, sorry) - param for control cash data updated (data will updated after xxx seconds or will auto updated from WS)
+//      showGetters: [], // getters for action show, will be action name 'load'+_getter_name_+_route_name_, example: 'loadSumUniqManager' (all rule for set getters can be applied, see below param getters)
 //      updateAfterAuthOff: true, // if need turn off auto update if you change Auth JWT
         updateOn: ['createProject', 'export'], //'' | [] //event name, which will be called for update cache for this route. May be string may be array
         // updateTimer: 10*60, // number of seconds for timer for update cache
