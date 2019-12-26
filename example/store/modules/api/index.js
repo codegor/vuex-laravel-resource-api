@@ -31,6 +31,7 @@ if('undefined' != typeof routes.socket && WS) {
 /** if you wont set your own getters library or your own error massages... */
 // Resolver.gettersLib = {/* your lib */};
 // Resolver.errorMe = {/* your lib for error mess */};
+// Resolver.authFail = () => {/* fanction for catch auth disable or expired */}
 
 Resolver.init(routes);
 Vue.use(Resolver);

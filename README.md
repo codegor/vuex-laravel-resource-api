@@ -148,7 +148,7 @@ First you need create in store vuex folder module api, then create at that folde
  this.$http
  ```
  
- **Function** for set Bearer Auth header (will be cool if you set up JWT Token in app.js file or in vuex init file, when init Vue and Vuex):
+ **Function** for set Bearer Auth header (will be cool if you set up JWT Token in app.js file or in vuex init file, when init Vue and Vuex or use auth prop from routes.js file):
  ```javascript
   /**
    * If you use JWT Auth, to set Header you can use this function
@@ -250,14 +250,26 @@ First you need create in store vuex folder module api, then create at that folde
  if you set **_loadMethodCashOff_**:true or/and **_showMethodCashOff_**:true. If you want to use cash, 
  you can call vuex action **_'load'+_route_name__** (example 'loadManger') or **_'show'+_route_name__** (example 'showManger').
  You can set time for valid cash data with **_showMethodCashUpdate_** and **_loadMethodCashUpdate_** params (by default set 10 minutes).
- 
- 
- **_NEW:_**
- 
- For now you can set getters for load and show method (cashed data): **_showGetters_** and **_loadGetters_** params. 
+  
+ You can set getters for load and show method (cashed data): **_showGetters_** and **_loadGetters_** params. 
  All rule for getters param can be applied for the params. 
  Response of load method should be a collection, response of show method should be a object of resource. 
  
+  
+ **_NEW:_**
+ 
+ For now you can setup JWT Auth with Local Storage, meta tag or global prop (prop of object window).
+ For this you need setup auth prop in routes.js file
+ You can set auth.places = ['ls', 'global', 'meta'] or one or two of its, sequences has the meaning
+ Default name of key you can see at routes.js file example, and if you need you can setup own name of key
+ 
+ For now you can catch event when auth not setted or when expired if you define function for Resolver.authFail property, 
+ see at examples folder file api/index.js
+ 
+ And for now you can check from anywhere through vuex getter satus of authorization, getter name is: 'resapiIsAuthorized'.
+ Also you can get Auth params from resapi axios, vuex getters: 'resapiAuthToken' and 'resapiAuthTokenExp'. 
+ And you always can get resapi axios through vm.$http
+                                                                                                         
  
 # <a name="getters"></a> Getters List
 

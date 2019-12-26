@@ -3,11 +3,22 @@ import axios from 'axios';
 import gettersLib from './getters';
 import errorMes from './errorMessage';
 
+const issetPropString = (o, s) => (_.has(o, s) && _.isString(o[s]) && '' != o[s]);
+
 const Resolver = {
   lazyTime: 100,       // time for collect requests and then update all what need once
   stREQ: 'requesting', // text for state requesting
   stFIN: 'finish',     // text for state finish request
   defTargetMethodCashValidTime: 10*60, // 10*60 seconds - time throw which data in the cash will be valid
+
+  defPlaces: [],
+  defLSSave: false,
+  defLSTokenKey:        'jwt_axios_access_token',
+  defLSTokenExpiredKey: 'jwt_axios_access_token_expired',
+  defGlobalTokenKey:        'jwt_axios_access_token',
+  defGlobalExpiredKey: 'jwt_axios_access_token_expired',
+  defMetaTokenKey:        'jwt-axios-access-token',
+  defMetaTokenExpiredKey: 'jwt-axios-access-token-expired',
 
   router: {},
   $http: {},
@@ -37,7 +48,8 @@ const Resolver = {
   callAfterAuth: [],
   updateAfterAuth: [],
   updating: [],
-  auth: false,
+  auth: false, // or token
+  authExp: -1,
   debug: false,
   gettersLib,
   errorMes,
@@ -83,6 +95,72 @@ const Resolver = {
     });
     // if(this.debug && this.$socket && this.$channel)
     //   console.log("REST API WS Channels:", this.$channel)
+  },
+  getAuthProp(){
+    if(_.has(this.router, 'auth') && _.has(this.router.auth, 'places') && _.isArray(this.router.auth.places) && 0 < this.router.auth.places.length) {
+      let a = this.router.auth;
+      return {
+        places: a.places,
+
+        lsSave:        _.has(a, 'lsSave') ? a.lsSave : this.defLSSave,
+
+        lsTokenKey:    issetPropString(a, 'lsTokenKey') ? a.lsTokenKey : this.defLSTokenKey,
+        lsTokenExpKey: issetPropString(a, 'lsTokenExpiredKey') ? a.lsTokenExpiredKey : this.defLSTokenExpiredKey,
+
+        globalTokenKey:    issetPropString(a, 'globalTokenKey') ? a.globalTokenKey : this.defGlobalTokenKey,
+        globalTokenExpKey: issetPropString(a, 'globalTokenExpiredKey') ? a.globalTokenExpiredKey : this.defGlobalExpiredKey,
+
+        metaTokenKey:    issetPropString(a, 'metaTokenKey') ? a.metaTokenKey : this.defMetaTokenKey,
+        metaTokenExpKey: issetPropString(a, 'metaTokenExpiredKey') ? a.metaTokenExpiredKey : this.defMetaTokenExpiredKey,
+      };
+    } else
+      return false;
+  },
+  authCheck() {
+    let n = Date.now() / 1000 | 0;
+    if(0 < this.authExp){
+      if(n < this.authExp)
+        return this.auth;
+      else
+        this.auth = false;
+    }
+
+    let auth = this.getAuthProp();
+    if (!auth) return this.auth;
+
+    let token = '', exp = -1;
+
+    _.each(auth.places, p => {
+      let t, e;
+      if('ls' == p){
+        t = localStorage.getItem(auth[p+'TokenKey']);
+        e = localStorage.getItem(auth[p+'TokenExpKey']);
+      }
+      if('global' == p){
+        t = window[auth[p+'TokenKey']];
+        e = window[auth[p+'TokenExpKey']];
+      }
+      if('meta' == p){
+        t = document.head.querySelector('meta[name="'+auth[p+'TokenKey']+'"]');
+        e = document.head.querySelector('meta[name="'+auth[p+'TokenExpKey']+'"]');
+      }
+      if(t && n < e && '' == token) {
+        token = t;
+        exp = e;
+      }
+    });
+
+    if(!this.auth && token)
+      this.authorise(token, exp);
+
+
+    return this.auth;
+  },
+  setHeaders(headers){
+    if(!_.isObject(headers)) {console.error('Headers receive only object!'); return;}
+    _.forEach(headers, (v, k) => {
+      this.$http.defaults.headers.common[k] = v;
+    });
   },
   setSocket(socket){
     this.$socket = socket;
@@ -143,16 +221,28 @@ const Resolver = {
   stopUpdating(r){
     _.pull(this.updating, r);
   },
-  emitAfterAuth(authStatus){
-    this.auth = authStatus;
-    if(authStatus){
-      _.each(this.callAfterAuth, (r) => {
-        this.$store.dispatch('update' + _.upperFirst(r));
-      }); // action didn't removed from store, because some times you will need relogin or set another AuthJWT token and all call of method without auth should update
+  authorise(authToken, exp){
+    this.setHeaders({Authorization: 'Bearer ' + authToken});
+    this.auth = authToken;
+    this.authExp = exp;
 
-      _.each(this.updateAfterAuth, (r) => {
-        this.$store.dispatch('update' + _.upperFirst(r));
-      });
+    setTimeout(() => { // need new thread because this function used in vuex getters
+      if(!!authToken){
+        _.each(this.callAfterAuth, (r) => {
+          this.$store.dispatch('update' + _.upperFirst(r));
+        }); // action didn't removed from store, because some times you will need relogin or set another AuthJWT token and all call of method without auth should update
+
+        _.each(this.updateAfterAuth, (r) => {
+          this.$store.dispatch('update' + _.upperFirst(r));
+        });
+      }
+
+    }, 5);
+    
+    let p = this.getAuthProp();
+    if(p && p.lsSave){
+      localStorage.setItem(p.lsTokenKey, authToken);
+      localStorage.setItem(p.lsTokenExpKey, exp);
     }
   },
   showMess(p, met, r){
@@ -281,9 +371,9 @@ const Resolver = {
       !(_.has(wa, met) && _.has(this.router.actions[r], 'withoutAuthTargetMethods') && true == this.router.actions[r]['withoutAuthTargetMethods'])){
       if (_.has(c, met) && !(_.has(this.router.actions[r], 'updateAfterAuthOff') && true == this.router.actions[r]['updateAfterAuthOff'])
         && !_.includes(this.updateAfterAuth, r))
-        this.updateAfterAuth.push(r);
+        this.updateAfterAuth.push(r); // this is for recall always when reauth
 
-      if(!this.auth) {
+      if(!this.authCheck()) { // check for auth
         if (this.debug) console.log('Auth has not set, store request, and after set AuthJWT all will be called...');
 
         if (_.has(c, met)) {
@@ -291,7 +381,10 @@ const Resolver = {
             && !_.includes(this.callAfterAuth, r))
             this.callAfterAuth.push(r);
         } else if (this.debug)
-          console.info('You ran api request for route with Auth, but Auth has not set, first, set Auth ($resapi.setAuthJWT(token))');
+          console.info('You ran api request for route with Auth, but Auth has not set, first, set Auth ($resapi.setAuthJWT(token)) or use auth prop from route.js conf file');
+
+        if(this.hasOwnProperty('authFail') && _.isFunction(this.authFail))
+          this.authFail();
 
         return;
       }
@@ -558,7 +651,11 @@ const Resolver = {
     return r;
   },
   getters(){
-    let r = {};
+    let r = {
+      resapiIsAuthorized: () => this.authCheck(),
+      resapiAuthToken:    () => this.auth,
+      resapiAuthTokenExp: () => this.authExp
+    };
     _.each(this.router.actions, (v, k) => {
       r[k] = state => state[k];                  // add itself getter
       r[k+'Status'] = state => state[k+'State']; // add getter for itself status
@@ -652,10 +749,7 @@ const Resolver = {
      * @param headers object - {name_of_header: "this is value of named header", ...}
      */
     $Vue.prototype.$resapi.setHeaders = headers => {
-      if(!_.isObject(headers)) {console.error('Headers receive only object!'); return;}
-      _.forEach(headers, (v, k) => {
-        this.$http.defaults.headers.common[k] = v;
-      });
+      obj.setHeaders(headers);
     };
 
     /**
@@ -670,9 +764,8 @@ const Resolver = {
      *   }
      * }
      */
-    $Vue.prototype.$resapi.setAuthJWT = token => {
-      $Vue.prototype.$resapi.setHeaders({Authorization: 'Bearer ' + token});
-      obj.emitAfterAuth(!!token);
+    $Vue.prototype.$resapi.setAuthJWT = (token, exp) => {
+      obj.authorise(token, exp);
     };
 
     /**

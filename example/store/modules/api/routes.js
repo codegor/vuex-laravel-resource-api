@@ -4,6 +4,20 @@ export default { // example of api routing for laravel resources rest api
   prefix: '/api/',
   socket: '', // set only port like ':6001' or nothing, empty string like ''
   // delimiter: '-', // kebab = "-" (default), snake = "_"
+  auth: {
+    // lsTokenKey: '', // def - jwt_axios_access_token
+    // lsTokenExpiredKey: '', // def - jwt_axios_access_token_expired
+    // lsSave: false; // def false - when setted token save to local storage
+
+    // metaTokenKey: '', // def - jwt-axios-access-token
+    // metaTokenExpiredKey: '', // def - jwt-axios-access-token-expired
+
+    // globalTokenKey: '', // def - jwt_axios_access_token
+    // globalTokenExpiredKey: '', // def - jwt_axios_access_token_expired
+
+    // places: []; // ['ls', 'global', 'meta'] - sequences and variant of places where can be auth token
+
+  },
 
   actions: {
     ...needAuth({ // if you need show, than some api points is under auth protection, you can use this help function, all call for getData will be called when Auth will be set (if you don't want use this help function you can set needAuth param to true, it is the same if you you use this help function)
