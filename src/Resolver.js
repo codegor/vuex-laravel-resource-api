@@ -244,9 +244,7 @@ const Resolver = {
     _.pull(this.updating, r);
   },
   authorise(authToken, exp){
-    this.setHeaders({Authorization: 'Bearer ' + authToken});
-    this.auth = authToken;
-    this.authExp = exp;
+    this.setJwt(authToken, exp);
 
     setTimeout(() => { // need new thread because this function used in vuex getters
       if(!!authToken){
@@ -260,11 +258,30 @@ const Resolver = {
       }
 
     }, 5);
+  },
+  setJwt(authToken, exp){
+    this.setHeaders({Authorization: 'Bearer ' + authToken});
+    this.auth = authToken;
+    this.authExp = exp;
 
+    this.saveJwtToLs(authToken, exp);
+  },
+  saveJwtToLs(token, exp){
     let p = this.getAuthProp();
     if(p && p.lsSave){
-      localStorage.setItem(p.lsTokenKey, authToken);
+      localStorage.setItem(p.lsTokenKey, token);
       localStorage.setItem(p.lsTokenExpKey, exp);
+    }
+  },
+  isSaveToLs(){
+    let p = this.getAuthProp();
+    return (p && p.lsSave);
+  },
+  clearJwtAtLs(){
+    let p = this.getAuthProp();
+    if(p && p.lsSave){
+      localStorage.removeItem(p.lsTokenKey);
+      localStorage.removeItem(p.lsTokenExpKey);
     }
   },
   showMess(p, met, r){
@@ -490,6 +507,9 @@ const Resolver = {
   },
   mutations(){
     let r = {};
+    if(this.isSaveToLs)
+      r.resapiLogout = r.resapiClearJwtAtLs = () => this.clearJwtAtLs();
+
     _.forEach(this.router.actions, (v, k) => {
       r['resapi'+_.upperFirst(k)] = (state, data) => {if(this.debug) console.log('setted '+'resapi'+_.upperFirst(k), data); state[k] = data;};
       r['status'+_.upperFirst(k)] = (state, status) => {if(this.debug) console.log('setted '+'status'+_.upperFirst(k), status); state[k+'State'] = status;};
@@ -820,6 +840,8 @@ const Resolver = {
       if(this.$socket && !this.$channel)
         this.startSocket(token, userId);
     };
+
+    $Vue.prototype.$resapi.logout = $Vue.prototype.$resapi.clearJwtAtLs = () => this.clearJwtAtLs();
 
     $Vue.prototype.$http = this.$http;
   }

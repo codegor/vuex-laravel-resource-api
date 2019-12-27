@@ -265,14 +265,18 @@ And then at any component you can use rest-api request by call (use somewhere in
  You can catch event when auth not setted or when expired if you define function for Resolver.authFail property, 
  see at examples folder file api/index.js
  
+ **_NEW:_**
+  
+ If you want to store JWT token (received from anywhere) to LS you can set param **_auth.lsSave_** to true.
+ If you set to true the param, at vuex mutation will be appear **'resapiLogout'** and **'resapiClearJwtAtLs'** and
+ also you can delete JWT from LS with **$vm.$resapi.logout** or **$vm.$resapi.clearJwtAtLs**
+
  And you can check from anywhere through vuex getter satus of authorization, getter name is: 'resapiIsAuthorized'.
  Also you can get Auth params from resapi axios, vuex getters: 'resapiAuthToken' and 'resapiAuthTokenExp'. 
  And you always can get resapi axios through vm.$http
-  
- **_NEW:_**
-                                                                                                         
+                                                                                                
  If you want to set 'X-CSRF-TOKEN' axios header from meta teg you can set to true routes.js prop **_csrf_**
- If you use doesnot default value for meta name you can set to this field name of meta teg.
+ If you use does not default value for meta name you can set to this field name of meta teg.
  If you want disable this option you can comment, set to false or ''.
  
 # <a name="getters"></a> Getters List
