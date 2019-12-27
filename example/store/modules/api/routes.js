@@ -5,18 +5,18 @@ export default { // example of api routing for laravel resources rest api
   socket: '', // set only port like ':6001' or nothing, empty string like ''
   // delimiter: '-', // kebab = "-" (default), snake = "_"
   auth: {
+    // places: [], // ['ls', 'global', 'meta'] - sequences and variant of places where can be auth token
+
+    // lsSave: false, // def false - when setted token save to local storage
+
     // lsTokenKey: '', // def - jwt_axios_access_token
     // lsTokenExpiredKey: '', // def - jwt_axios_access_token_expired
-    // lsSave: false; // def false - when setted token save to local storage
 
     // metaTokenKey: '', // def - jwt-axios-access-token
     // metaTokenExpiredKey: '', // def - jwt-axios-access-token-expired
 
     // globalTokenKey: '', // def - jwt_axios_access_token
     // globalTokenExpiredKey: '', // def - jwt_axios_access_token_expired
-
-    // places: []; // ['ls', 'global', 'meta'] - sequences and variant of places where can be auth token
-
   },
 
   actions: {

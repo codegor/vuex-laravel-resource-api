@@ -24,13 +24,15 @@ npm install vuex-laravel-resource-api
 
 # <a name="How-to-us"></a> How to use?
 
-First you need create in store vuex folder module api, then create at that folder 2 files:
+First you need create in store vuex folder module **api** _(store/modules/api)_, then create at that folder 2 files:
  - index.js
  - routes.js
  
- Example of this files you can see at example folder.
+Second you need add the api module to the **store** _(store/index.js)_
  
- At any component you can use rest-api request by call (use somewhere in your code)
+Third edit routes.js file for your needs
+
+And then at any component you can use rest-api request by call (use somewhere in your code)
  ```javascript
  /**
  * @param path string - this filed have 2 connected part: first is the method, and second is the resource

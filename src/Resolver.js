@@ -238,7 +238,7 @@ const Resolver = {
       }
 
     }, 5);
-    
+
     let p = this.getAuthProp();
     if(p && p.lsSave){
       localStorage.setItem(p.lsTokenKey, authToken);
@@ -678,6 +678,8 @@ const Resolver = {
     let obj = this;
 
     this.$http = axios.create();
+    this.authCheck();
+
     if(this.$socket){
       // this.$http.defaults.headers.common['X-Socket-Id'] = this.$socket.socketId();
       this.$http.interceptors.request.use(config => {
