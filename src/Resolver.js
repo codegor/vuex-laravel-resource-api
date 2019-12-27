@@ -120,13 +120,13 @@ const Resolver = {
     let n = Date.now() / 1000 | 0;
     if(0 < this.authExp){
       if(n < this.authExp)
-        return this.auth;
+        return !!this.auth;
       else
         this.auth = false;
     }
 
     let auth = this.getAuthProp();
-    if (!auth) return this.auth;
+    if (!auth) return !!this.auth;
 
     let token = '', exp = -1;
 
@@ -154,7 +154,7 @@ const Resolver = {
       this.authorise(token, exp);
 
 
-    return this.auth;
+    return !!this.auth;
   },
   setHeaders(headers){
     if(!_.isObject(headers)) {console.error('Headers receive only object!'); return;}
