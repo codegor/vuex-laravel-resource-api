@@ -256,22 +256,24 @@ And then at any component you can use rest-api request by call (use somewhere in
  You can set getters for load and show method (cashed data): **_showGetters_** and **_loadGetters_** params. 
  All rule for getters param can be applied for the params. 
  Response of load method should be a collection, response of show method should be a object of resource. 
- 
   
- **_NEW:_**
- 
- For now you can setup JWT Auth with Local Storage, meta tag or global prop (prop of object window).
+ You can setup JWT Auth with Local Storage, meta tag or global prop (prop of object window).
  For this you need setup auth prop in routes.js file
  You can set auth.places = ['ls', 'global', 'meta'] or one or two of its, sequences has the meaning
  Default name of key you can see at routes.js file example, and if you need you can setup own name of key
  
- For now you can catch event when auth not setted or when expired if you define function for Resolver.authFail property, 
+ You can catch event when auth not setted or when expired if you define function for Resolver.authFail property, 
  see at examples folder file api/index.js
  
- And for now you can check from anywhere through vuex getter satus of authorization, getter name is: 'resapiIsAuthorized'.
+ And you can check from anywhere through vuex getter satus of authorization, getter name is: 'resapiIsAuthorized'.
  Also you can get Auth params from resapi axios, vuex getters: 'resapiAuthToken' and 'resapiAuthTokenExp'. 
  And you always can get resapi axios through vm.$http
+  
+ **_NEW:_**
                                                                                                          
+ If you want to set 'X-CSRF-TOKEN' axios header from meta teg you can set to true routes.js prop **_csrf_**
+ If you use doesnot default value for meta name you can set to this field name of meta teg.
+ If you want disable this option you can comment, set to false or ''.
  
 # <a name="getters"></a> Getters List
 

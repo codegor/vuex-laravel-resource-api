@@ -4,6 +4,7 @@ export default { // example of api routing for laravel resources rest api
   prefix: '/api/',
   socket: '', // set only port like ':6001' or nothing, empty string like ''
   // delimiter: '-', // kebab = "-" (default), snake = "_"
+  csrf: true, // true | false | '' | '__field-meta-name__'
   auth: {
     // places: [], // ['ls', 'global', 'meta'] - sequences and variant of places where can be auth token
 

@@ -11,6 +11,8 @@ const Resolver = {
   stFIN: 'finish',     // text for state finish request
   defTargetMethodCashValidTime: 10*60, // 10*60 seconds - time throw which data in the cash will be valid
 
+  defCSRF:'csrf-token',
+
   defPlaces: [],
   defLSSave: false,
   defLSTokenKey:        'jwt_axios_access_token',
@@ -143,6 +145,9 @@ const Resolver = {
       if('meta' == p){
         t = document.head.querySelector('meta[name="'+auth[p+'TokenKey']+'"]');
         e = document.head.querySelector('meta[name="'+auth[p+'TokenExpKey']+'"]');
+
+        t = t ? t.content : t;
+        e = e ? e.content : e;
       }
       if(t && n < e && '' == token) {
         token = t;
@@ -161,6 +166,23 @@ const Resolver = {
     _.forEach(headers, (v, k) => {
       this.$http.defaults.headers.common[k] = v;
     });
+  },
+  setXMLHttpRequest(){
+    this.setHeaders({'X-Requested-With': 'XMLHttpRequest'});
+  },
+  setCSRFFromMeta(){
+    if(_.has(this.router, 'csrf') && this.router.csrf){
+      let f = true === this.router.csrf ? this.defCSRF : this.router.csrf;
+      if(!_.isString(f))
+        console.error('config of CSRF token field error, should be String', this.router.csrf);
+
+      let token = document.head.querySelector('meta[name="'+f+'"]');
+
+      if(token)
+        this.setHeaders({'X-CSRF-TOKEN': token.content});
+      else
+        console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
+    }
   },
   setSocket(socket){
     this.$socket = socket;
@@ -678,6 +700,8 @@ const Resolver = {
     let obj = this;
 
     this.$http = axios.create();
+    this.setXMLHttpRequest();
+    this.setCSRFFromMeta();
     this.authCheck();
 
     if(this.$socket){
