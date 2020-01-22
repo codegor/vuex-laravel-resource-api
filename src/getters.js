@@ -111,6 +111,12 @@ const act = { //actions
       });
     });
     return res;
+  },
+  get(r,f){ // f - field (dot notated),
+    return _.get(r,f);
+  },
+  is(r,f,v){ // f - field (dot notated), v - value of this field
+    return _.get(r,f) == v;
   }
 };
 
@@ -364,6 +370,8 @@ export default {
   sum: (resource, field) => act.sum(resource, field),
   sumUniq: (resource, unicfield, sumfield) => act.sum(act.uniq(resource, unicfield), sumfield),
   jsonParse: (resource, ...fields) => act.jsonParse(resource, fields),
+  get: (resource, field) => act.get(resource, field),
+  is: (resource, field, val) => act.is(resource, field, val),
 }
 
 

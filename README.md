@@ -531,4 +531,14 @@ sumUniq(unicfield, sumfield);
 * convert from JSON to object for this fields
 */
 jsonParse(...fields)
+
+/**
+* get one field from api response (field dot notated)
+*/
+get(field)
+
+/**
+* get one field from api response (field dot notated) and compare it with val (==)
+*/
+is(field, val)
 ```
