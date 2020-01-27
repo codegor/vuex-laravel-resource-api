@@ -465,15 +465,15 @@ const Resolver = {
 
     let url = this.router.prefix + u;
 
-    let p;
+    let p, c;
 
     this.status(r);
 
     // request
     if(peculiar)
-      p = this.router.actions[r].methods[met](url, data);
+      c = this.router.actions[r].methods[met](url, data);
     else {
-      let c = {
+      c = {
         method: t[met],
         url: url + ((_.has(pm, met)) ? '/' + data.id : '')
       };
@@ -483,10 +483,8 @@ const Resolver = {
 
       if (_.has(pd, met))
         c.params = data;
-
-
-      p = this.$http(c);
     }
+    p = this.$http(c);
 
     this.afterReq(p, r, met);
 

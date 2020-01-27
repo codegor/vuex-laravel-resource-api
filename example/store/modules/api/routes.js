@@ -22,6 +22,43 @@ export default { // example of api routing for laravel resources rest api
 
   actions: {
     ...needAuth({ // if you need show, than some api points is under auth protection, you can use this help function, all call for getData will be called when Auth will be set (if you don't want use this help function you can set needAuth param to true, it is the same if you you use this help function)
+      auth: { // name of resource CamelCase (will be transformed to kebab case (with "-"))
+        // will be by default: get - get /; load - get /?param=xxx; show - get /id; create - post /; update - put /id; delete - delete /id;
+        methods: {
+          check(url, data){
+            return {
+              method: 'post',
+              url: url + '/check',
+              data
+            };
+          },
+          change(url, data){
+            return {
+              method: 'post',
+              url: url + '/change',
+              data
+            };
+          },
+        }, // example of custom methods
+//      update: [], // if we need some update actions after this action (by default after change action resourse update itself) // ['name of resource 1 (without 'get' or else)', 'name 2', etc] - will be get request
+//      connected: '',  //'' | [] // it means that if connected action run update, this action will updated too
+//      withoutAuthTargetMethods: true, // if set to true, that means, that load and show methods can be call without authenticate
+        autoUpdateOff: true, // if need turn off autoupdate
+//      lazyUpdateOff: true, // if need turn off lazyupdate
+//      loadMethodCashOff: true, // if you need turn off create Store var for load method (switch off cash for load method)
+//      loadMethodCashUpdate: 60, // num of seconds (default 10*60 sec) or string 'socket' (this is on development, sorry) - param for control cash data updated (data will updated after xxx seconds or will auto updated from WS)
+//      loadGetters: [], // getters for action load, will be action name 'load'+_getter_name_+_route_name_, example: 'loadSumUniqManager' (all rule for set getters can be applied, see below param getters)
+//      showMethodCashOff: true, // if you need turn off create Store var for show method (switch off cash for show method)
+//      showMethodCashUpdate: 60, // num of seconds (default 10*60 sec) or string 'socket' (this is on development, sorry) - param for control cash data updated (data will updated after xxx seconds or will auto updated from WS)
+//      showGetters: [], // getters for action show, will be action name 'load'+_getter_name_+_route_name_, example: 'loadSumUniqManager' (all rule for set getters can be applied, see below param getters)
+//      updateAfterAuthOff: true, // if need turn off auto update if you change Auth JWT
+//         updateOn: [], //'' | [] //event name, which will be called for update cache for this route. May be string may be array
+        // updateTimer: 10*60, // number of seconds for timer for update cache
+        // updateSocket: true, // if present REST API will be listen Laravel-WebSocket.IO event (name like action key) from 'api' channel
+        autoMessOff: true, // if need turn off message after success api request
+        name: 'Auth', // name for auto message which will be inserted to
+//      getters: [], // if we need calculated fields there we can write it. Name will be curent name + resourse name, like examplManager or can be listed from getters lib like [string, string] or {name:'getter1', name2:'getter2'} (operate only with resource state var)
+      },
       manager: { // name of resource CamelCase (will be transformed to kebab case (with "-"))
         // will be by default: get - get /; load - get /?param=xxx; show - get /id; create - post /; update - put /id; delete - delete /id;
 //      methods: {}, // if ever I will have another request like rest it will be there (object of functions)
