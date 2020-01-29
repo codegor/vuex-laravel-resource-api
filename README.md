@@ -87,6 +87,10 @@ And then at any component you can use rest-api request by call (use somewhere in
       ...mapGetters({ // getters created from routes.js config file, first part it is from 'getters' config field, second part it is a resource name with upper case first letter
         manager: 'groupedTreeManager', // 'groupedTree' it is a getter, 'manager' it is a source of data for getters (data received from manager API point)
         managerStatus: 'managerStatus', // Can bee 'requesting' or 'finish'. It is a special getter, it's created for all resources, and its show loading status (request progress). Current is for 'manager' resource 
+        isManagerRequesting: 'isManagerRequesting', // bool. It is a special getter, it's created for all resources, and its show loading status (request progress). Current is for 'manager' resource 
+        resapiStatus: 'resapiStatus', // Can bee 'requesting', 'finish' or 'fail'. It is a special getter, its show loading status (request progress) for resapi. 
+        isResapiRequesting: 'isResapiRequesting', // bool. It is a special getter, its show loading status (request progress) for resapi. 
+        isResapiFail: 'isResapiFail', // bool. It is a special getter, its show loading status (request progress) for resapi. 
         item: 'byCustKeyCompanyItem' // 'byCustKey' getter, resource - 'companyItem'
       }),
       

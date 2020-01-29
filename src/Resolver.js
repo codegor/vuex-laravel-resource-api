@@ -9,6 +9,7 @@ const Resolver = {
   lazyTime: 100,       // time for collect requests and then update all what need once
   stREQ: 'requesting', // text for state requesting
   stFIN: 'finish',     // text for state finish request
+  stERR: 'fail',     // text for state fail request
   defTargetMethodCashValidTime: 10*60, // 10*60 seconds - time throw which data in the cash will be valid
 
   defCSRF:'csrf-token',
@@ -224,6 +225,7 @@ const Resolver = {
       else
         this.requests[r] = [p];
 
+
       let finish = () => {
         let i = this.requests[r].indexOf(p);
         this.requests[r].splice(i, 1);
@@ -236,12 +238,21 @@ const Resolver = {
       p.then(finish, finish);
     }
   },
+  setStatusFail(){
+    this.$store.commit('statusResapi', this.stERR);
+  },
   startUpdating(r){
+    if(0 == this.updating.length)
+      this.$store.commit('statusResapi', this.stREQ);
+
     if(!_.includes(this.updating, r))
       this.updating.push(r);
   },
   stopUpdating(r){
     _.pull(this.updating, r);
+
+    if(0 == this.updating.length)
+      this.$store.commit('statusResapi', this.stFIN);
   },
   authorise(authToken, exp){
     this.setJwt(authToken, exp);
@@ -493,6 +504,7 @@ const Resolver = {
 
   states(){
     let r = {};
+    r['resapiStatus'] = null;
     _.each(this.router.actions, (v, k) => {
       r[k] = null;
       r[k+'State'] = null;
@@ -507,6 +519,8 @@ const Resolver = {
     let r = {};
     if(this.isSaveToLs)
       r.resapiLogout = r.resapiClearJwtAtLs = () => this.clearJwtAtLs();
+
+    r['statusResapi'] = (state, status) => {if(this.debug) console.log('setted '+'statusResapi', status); state['resapiStatus'] = status;};
 
     _.forEach(this.router.actions, (v, k) => {
       r['resapi'+_.upperFirst(k)] = (state, data) => {if(this.debug) console.log('setted '+'resapi'+_.upperFirst(k), data); state[k] = data;};
@@ -696,9 +710,14 @@ const Resolver = {
       resapiAuthToken:    () => this.auth,
       resapiAuthTokenExp: () => this.authExp
     };
+    r['resapiStatus'] = state => state['resapiStatus'];
+    r['isResapiRequesting'] = state => state['resapiStatus'] == this.stREQ;
+    r['isResapiFail'] = state => state['resapiStatus'] == this.stERR;
+
     _.each(this.router.actions, (v, k) => {
       r[k] = state => state[k];                  // add itself getter
       r[k+'Status'] = state => state[k+'State']; // add getter for itself status
+      r['is'+_.upperFirst(k)+'Requesting'] = state => state[k+'State'] == this.stREQ; // add getter for itself status bool
 
       if(_.has(v, 'getters') && !_.isEmpty(v.getters))
         _.each(this.createGetters(v.getters, k), (vv, kk) => { r[kk] = state => vv(state[k]); });
@@ -742,6 +761,8 @@ const Resolver = {
             else
               obj.errorMes.def(error, obj);
           }
+
+          obj.setStatusFail();
 
           if(obj.debug) console.dir(error);
         }, 50);
