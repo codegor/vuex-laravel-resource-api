@@ -56,6 +56,7 @@ const Resolver = {
   debug: false,
   gettersLib,
   errorMes,
+  emptyPromise: () => new Promise((resolve, reject) => resolve(true)),
 
   m: _.invert(['get', 'load', 'show', 'create', 'update', 'delete']), //methods
   pm:_.invert(['show', 'update', 'delete']), //paramMethod (need id)
@@ -412,7 +413,9 @@ const Resolver = {
 
     if(_.has(s, met) && _.includes(this.updating, r)){
       if (this.debug) console.log(`Request for ${r} is calling, skip this call...`);
-      return;
+      res.req = _.has(this.requests, r) ? this.requests[r][this.requests[r].length-1] : this.emptyPromise();
+      res.go = false;
+      return res;
     }
 
     if(!_.has(this.router.actions, r)) {console.error('API Resolver don\'t know what to do - path follow to undefined route!'); return;}
@@ -471,7 +474,8 @@ const Resolver = {
     let {pm, d, pd, md} = this;
     let t = {get: 'get', load: 'get', show: 'get', create: 'post', update: 'put', delete: 'delete'}; // transform
 
-    let {u, r, met, go, peculiar} = this.validate(path, data);
+    let {u, r, met, go, peculiar, req} = this.validate(path, data);
+    if(req) return req;
     if(!go) return;
 
     let url = this.router.prefix + u;
