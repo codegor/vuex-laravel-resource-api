@@ -454,12 +454,12 @@ const Resolver = {
 
     return res;
   },
-  afterReq(p, r, met){
+  afterReq(p, r, met, withoutUpdate){
     let {a} = this;
     if(p instanceof Promise) {
       this.status(r, p);
 
-      if (!_.has(a, met)) {
+      if (!_.has(a, met) && !withoutUpdate) {
         if (_.has(this.router.actions[r], 'lazyUpdateOff') && this.router.actions[r].lazyUpdateOff)
           this.update(p, r);
         else
@@ -470,7 +470,7 @@ const Resolver = {
     } else console.error('API Resolver: the custom method http request or something else return is not a Promise instanse!');
   },
 
-  resolve(path, data) { //path = action + api name of Resourse. actions - get, show, update, create, delete and etc
+  resolve(path, data, withoutUpdate) { //path = action + api name of Resourse. actions - get, show, update, create, delete and etc
     let {pm, d, pd, md} = this;
     let t = {get: 'get', load: 'get', show: 'get', create: 'post', update: 'put', delete: 'delete'}; // transform
 
@@ -501,7 +501,7 @@ const Resolver = {
     }
     p = this.$http(c);
 
-    this.afterReq(p, r, met);
+    this.afterReq(p, r, met, withoutUpdate);
 
     return p;
   },
@@ -802,8 +802,8 @@ const Resolver = {
      *
      * @param data object - it is data for Axios request, but for some method must be id field (see above, @param path)
      */
-    $Vue.prototype.$apiResource = $Vue.prototype.$resapi = async (path, data) => {
-      let res = await obj.resolve(path, data);
+    $Vue.prototype.$apiResource = $Vue.prototype.$resapi = async (path, data, withoutUpdate) => {
+      let res = await obj.resolve(path, data, withoutUpdate);
       return (res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data;
     };
 

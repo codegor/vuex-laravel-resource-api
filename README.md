@@ -60,8 +60,9 @@ And then at any component you can use rest-api request by call (use somewhere in
  *                      where url - it is a action name, data - it is a data from $resapi call. 
  *                      
  * @param data object - it is data for Axios request, but for some method must be id field (see above, @param path)
+ * @param withoutUpdate bool - if true after request will run no one update action 
  */ 
- this.$resapi(path, data).then(a => {
+ this.$resapi(path, data, withoutUpdate).then(a => {
    // actions after success
  });
  ``` 
@@ -70,8 +71,9 @@ And then at any component you can use rest-api request by call (use somewhere in
  /**
  * @param path string (see above)
  * @param data object (see above)
+ * @param withoutUpdate bool (see above)
  */
- this.$apiResource(path, data).then(a => {
+ this.$apiResource(path, data, withoutUpdate).then(a => {
   // actions after success
 });
  ``` 
