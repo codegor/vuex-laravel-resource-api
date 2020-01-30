@@ -4,6 +4,7 @@ import gettersLib from './getters';
 import errorMes from './errorMessage';
 
 const issetPropString = (o, s) => (_.has(o, s) && _.isString(o[s]) && '' != o[s]);
+const getData = (res) => !_.isEmpty(res.data.data) ? ((res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data) : {};
 
 const Resolver = {
   lazyTime: 100,       // time for collect requests and then update all what need once
@@ -372,8 +373,11 @@ const Resolver = {
 
     //auto update
     if(!_.includes(u, r) && !(_.has(this.router.actions[r], 'autoUpdateOff') && this.router.actions[r].autoUpdateOff)){
-      p.then(() => {
-        this.$store.dispatch('update'+_.upperFirst(r));
+      p.then((res) => {
+        if(res && _.has(res, 0) && _.has(this.router.actions[r], 'updateFromResponse') && this.router.actions[r].updateFromResponse)
+          this.$store.commit('resapi'+_.upperFirst(r), getData(res[0]));
+        else
+          this.$store.dispatch('update'+_.upperFirst(r));
       });
     }
   },
@@ -559,7 +563,7 @@ const Resolver = {
         if(this.debug) console.log('run update '+_.upperFirst(k));
         try{
           let res = await this.resolve('get'+_.upperFirst(k));
-          commit('resapi'+_.upperFirst(k), !_.isEmpty(res.data.data) ? ((res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data) : {});
+          commit('resapi'+_.upperFirst(k), getData(res));
         } catch (exception) {
 
         }
@@ -586,7 +590,7 @@ const Resolver = {
           let resp = {};
           try{
             let res = await this.resolve('load'+_.upperFirst(k), params);
-            resp = !_.isEmpty(res.data.data) ? ((res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data) : {};
+            resp = getData(res);
             commit('cashLoad'+_.upperFirst(k), {params, resp});
           } catch (exception) {
 
@@ -624,7 +628,7 @@ const Resolver = {
           let resp = {};
           try{
             let res = await this.resolve('show'+_.upperFirst(k), params);
-            resp = !_.isEmpty(res.data.data) ? ((res.data.data && res.data.data[0] && res.data.data[0]['id']) ? _.keyBy(res.data.data, 'id') : res.data.data) : {};
+            resp = getData(res);
             commit('cashShow'+_.upperFirst(k), {params, resp});
           } catch (exception) {
 

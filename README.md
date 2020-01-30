@@ -234,6 +234,9 @@ And then at any component you can use rest-api request by call (use somewhere in
  usually, after each create action, the resource update itself will be called, but with a lazy update, only one auto update action will be called. 
  If you want to disable this behavior you can set in config of resource field: _**'lazyUpdateOff'**_ to true.
  
+ You can enable resource update from response, if you after each action return the same result as you return after get method.
+ If you want to enable this behavior you can set in config of resource field: _**'updateFromResponse'**_ to true.
+ 
  The library also has auto massage after success action (create, update, delete). 
  The library call global method of Vue _**'showMess'**_ for show massage.
  If you want use this functionality, you should to define this global method at **example/.../index.js** and set Vue instanse for lib with function _**$resapi.setVue()**_.

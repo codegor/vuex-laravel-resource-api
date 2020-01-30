@@ -43,8 +43,9 @@ export default { // example of api routing for laravel resources rest api
 //      update: [], // if we need some update actions after this action (by default after change action resourse update itself) // ['name of resource 1 (without 'get' or else)', 'name 2', etc] - will be get request
 //      connected: '',  //'' | [] // it means that if connected action run update, this action will updated too
 //      withoutAuthTargetMethods: true, // if set to true, that means, that load and show methods can be call without authenticate
-        autoUpdateOff: true, // if need turn off autoupdate
-//      lazyUpdateOff: true, // if need turn off lazyupdate
+//      updateFromResponse: true, // if need turn on auto update from response
+        autoUpdateOff: true, // if need turn off auto update
+//      lazyUpdateOff: true, // if need turn off lazy update
 //      loadMethodCashOff: true, // if you need turn off create Store var for load method (switch off cash for load method)
 //      loadMethodCashUpdate: 60, // num of seconds (default 10*60 sec) or string 'socket' (this is on development, sorry) - param for control cash data updated (data will updated after xxx seconds or will auto updated from WS)
 //      loadGetters: [], // getters for action load, will be action name 'load'+_getter_name_+_route_name_, example: 'loadSumUniqManager' (all rule for set getters can be applied, see below param getters)
@@ -65,8 +66,9 @@ export default { // example of api routing for laravel resources rest api
 //      update: [], // if we need some update actions after this action (by default after change action resourse update itself) // ['name of resource 1 (without 'get' or else)', 'name 2', etc] - will be get request
 //      connected: '',  //'' | [] // it means that if connected action run update, this action will updated too
         withoutAuthTargetMethods: true, // if set to true, that means, that load and show methods can be call without authenticate
-//      autoUpdateOff: true, // if need turn off autoupdate
-//      lazyUpdateOff: true, // if need turn off lazyupdate
+//      updateFromResponse: true, // if need turn on auto update from response
+//      autoUpdateOff: true, // if need turn off auto update
+//      lazyUpdateOff: true, // if need turn off lazy update
 //      loadMethodCashOff: true, // if you need turn off create Store var for load method (switch off cash for load method)
 //      loadMethodCashUpdate: 60, // num of seconds (default 10*60 sec) or string 'socket' (this is on development, sorry) - param for control cash data updated (data will updated after xxx seconds or will auto updated from WS)
 //      loadGetters: [], // getters for action load, will be action name 'load'+_getter_name_+_route_name_, example: 'loadSumUniqManager' (all rule for set getters can be applied, see below param getters)
@@ -102,8 +104,9 @@ export default { // example of api routing for laravel resources rest api
 //      methods: {}, // if ever i will have another request like rest it will be there (object of functions)
 //      update: [], // if we need some update actions after this action (by default after change action resourse update itself) // ['name of resource 1 (without 'get' or else)', 'name 2', etc] - will be get request
       connected: 'manager',  //'' | [] // it means that if connected action run update, this action will updated too
-//      autoUpdateOff: true, // if need turn off autoupdate
-//      lazyUpdateOff: true, // if need turn off lazyupdate
+//      updateFromResponse: true, // if need turn on auto update from response
+//      autoUpdateOff: true, // if need turn off auto update
+//      lazyUpdateOff: true, // if need turn off lazy update
       updateOn: 'createProject', //'' | [] //event name, which will be called for update cache for this route. May be string may be array
       // updateTimer: 20*60, // number of seconds for timer for update cache
       updateSocket: true, // if present REST API will be listen Laravel-WebSocket.IO event (name like action key) from 'api' channel
