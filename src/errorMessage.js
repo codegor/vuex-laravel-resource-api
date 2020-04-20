@@ -9,6 +9,9 @@ export default {
   404() {
     alert('Seems this feature is still on the developing mode, please try again later...');
   },
+  403() {
+    alert('Seems you try get access to the resource, which does not authorized for you...');
+  },
   422(axResp){
     let d = axResp.response.data || {};
     let m = d.message || 'Sorry, some of data sent to the server was invalid.';
