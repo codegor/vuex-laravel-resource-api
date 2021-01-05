@@ -4,7 +4,7 @@
   "main": "src/Resolver.js",
   "description": "Vue API library for easy get data from Laravel REST Controller",
   "dependencies": {
-    "axios": "^0.18",
+    "axios": "^0.21",
     "lodash": "^4.17.10",
     "socket.io-client": "^2.2.0",
     "laravel-echo": "^1.5.3"
